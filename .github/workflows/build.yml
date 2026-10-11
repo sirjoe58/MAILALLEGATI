@@ -1,0 +1,54 @@
+name: Compila MailAllegati
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: android-actions/setup-android@v3
+      - name: Compila APK
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew --no-daemon assembleDebug
+          cp app/build/outputs/apk/debug/app-debug.apk ../MailAllegati.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: MailAllegati-Android
+          path: |
+            MailAllegati.apk
+            android/LEGGIMI_AVVERTENZE.txt
+
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Compila EXE
+        working-directory: windows
+        run: |
+          python -m pip install -r requirements.txt
+          python -m PyInstaller --noconfirm --onefile --windowed --name MailAllegati --collect-submodules keyring.backends --add-data "LEGGIMI_AVVERTENZE.txt;." mail_allegati.py
+          Copy-Item LEGGIMI_AVVERTENZE.txt dist\
+      - name: Crea programma di installazione
+        working-directory: windows
+        run: |
+          if (-not (Test-Path "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe")) { choco install innosetup -y --no-progress }
+          & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" installer.iss
+      - uses: actions/upload-artifact@v4
+        with:
+          name: MailAllegati-Windows
+          path: |
+            windows/dist/MailAllegati-Setup.exe
+            windows/dist/MailAllegati.exe
+            windows/dist/LEGGIMI_AVVERTENZE.txt
