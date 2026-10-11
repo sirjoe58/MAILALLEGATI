@@ -372,7 +372,7 @@ class MainActivity : AppCompatActivity() {
             .create()
         dialog.setCanceledOnTouchOutside(false)
         dialog.show()
-        val ok = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+        val ok = dialog.getButton(android.content.DialogInterface.BUTTON_POSITIVE)
         ok.isEnabled = false
         check.setOnCheckedChangeListener { _, c -> ok.isEnabled = c }
 
