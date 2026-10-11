@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="MailAllegati"
+            android:textAppearance="?attr/textAppearanceHeadlineSmall"
+            android:paddingTop="8dp" />
+        <TextView style="@style/Note" android:text="Salva automaticamente gli allegati delle email dei mittenti scelti." />
+        <TextView style="@style/Section" android:text="1 · Casella email" />
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Field"
+            android:hint="Server IMAP (es. imaps.aruba.it)">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/imapServer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textUri" />
+        </com.google.android.material.textfield.TextInputLayout>
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Field"
+            android:hint="Porta (993 con SSL)">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/imapPort"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="number" />
+        </com.google.android.material.textfield.TextInputLayout>
+        <com.google.android.material.checkbox.MaterialCheckBox
+            android:id="@+id/imapSsl"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Connessione SSL (consigliato)" />
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Field"
+            android:hint="Utente / indirizzo email">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/imapUser"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textEmailAddress" />
+        </com.google.android.material.textfield.TextInputLayout>
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Field"
+            android:hint="Password" app:endIconMode="password_toggle">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/imapPassword"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textPassword" />
+        </com.google.android.material.textfield.TextInputLayout>
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Field"
+            android:hint="Cartella da controllare (di solito INBOX)">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/imapFolder"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text" />
+        </com.google.android.material.textfield.TextInputLayout>
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnTestImap" style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Prova connessione email" />
+        <TextView style="@style/Section" android:text="2 · Mittenti" />
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Field"
+            android:hint="Un mittente per riga (es. fatture@ditta.it oppure @ditta.it)">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/senders"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textMultiLine|textEmailAddress"
+                android:minLines="4"
+                android:gravity="top" />
+        </com.google.android.material.textfield.TextInputLayout>
+        <TextView style="@style/Section" android:text="3 · Cartelle di destinazione" />
+        <TextView style="@style/Note" android:text="Gli allegati vengono salvati in tutte le cartelle dell\'elenco." />
+        <LinearLayout
+            android:id="@+id/folderList"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnAddFolder" style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="+ Aggiungi cartella" />
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Field"
+            android:hint="Solo questi tipi di file (vuoto = tutti), es: pdf, xml">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/extensions"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text" />
+        </com.google.android.material.textfield.TextInputLayout>
+        <com.google.android.material.checkbox.MaterialCheckBox
+            android:id="@+id/ignoreInline"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Ignora immagini incorporate (loghi nelle firme)" />
+        <com.google.android.material.checkbox.MaterialCheckBox
+            android:id="@+id/subSender"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Sottocartella per ogni mittente" />
+        <com.google.android.material.checkbox.MaterialCheckBox
+            android:id="@+id/subMonth"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Sottocartella per mese (es. 2026-10)" />
+        <com.google.android.material.checkbox.MaterialCheckBox
+            android:id="@+id/markRead"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Segna come lette le email elaborate" />
+        <com.google.android.material.checkbox.MaterialCheckBox
+            android:id="@+id/processExisting"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Al primo avvio elabora anche le email già presenti" />
+        <TextView style="@style/Section" android:text="4 · NAS (facoltativo)" />
+        <com.google.android.material.checkbox.MaterialCheckBox
+            android:id="@+id/nasEnabled"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Carica gli allegati anche sul NAS" />
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Field"
+            android:hint="Indirizzo cartella NAS (es. \\\\192.168.1.10\\condivisa\\allegati)">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/nasPath"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textUri" />
+        </com.google.android.material.textfield.TextInputLayout>
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Field"
+            android:hint="Utente NAS (vuoto = ospite)">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/nasUser"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text" />
+        </com.google.android.material.textfield.TextInputLayout>
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Field"
+            android:hint="Password NAS" app:endIconMode="password_toggle">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/nasPassword"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textPassword" />
+        </com.google.android.material.textfield.TextInputLayout>
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Field"
+            android:hint="Dominio / gruppo di lavoro (di solito vuoto)">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/nasDomain"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text" />
+        </com.google.android.material.textfield.TextInputLayout>
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnTestNas" style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Prova connessione NAS" />
+        <TextView style="@style/Note" android:text="Il telefono deve essere sulla stessa rete Wi-Fi del NAS (o collegato in VPN)." />
+        <TextView style="@style/Note" android:text="Se il NAS è spento o irraggiungibile, gli allegati restano in coda nel telefono e vengono inviati automaticamente appena il NAS torna raggiungibile." />
+
+        <TextView
+            android:id="@+id/queueInfo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:textStyle="bold" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnQueueSend"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginEnd="6dp"
+                android:text="Invia ora al NAS" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnQueueClear"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Svuota coda" />
+        </LinearLayout>
+        <TextView style="@style/Section" android:text="5 · Automazione" />
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Field"
+            android:hint="Controlla ogni quanti minuti (minimo 15)">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/interval"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="number" />
+        </com.google.android.material.textfield.TextInputLayout>
+        <com.google.android.material.checkbox.MaterialCheckBox
+            android:id="@+id/notify"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Avvisami con una notifica quando salvo allegati" />
+        <com.google.android.material.materialswitch.MaterialSwitch
+            android:id="@+id/monitor"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingVertical="8dp"
+            android:text="Monitoraggio automatico attivo" />
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnBattery" style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Escludi dal risparmio batteria" />
+        <TextView style="@style/Note" android:text="Consigliato: altrimenti Android può rallentare i controlli in background." />
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnSave"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Salva impostazioni" />
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnCheckNow" style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Controlla ora" />
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnReset" style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Ricomincia da capo (dimentica le email già viste)" />
+        <TextView style="@style/Section" android:text="Registro attività" />
+        <TextView
+            android:id="@+id/log"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?attr/colorSurfaceContainer"
+            android:fontFamily="monospace"
+            android:padding="10dp"
+            android:textIsSelectable="true"
+            android:textSize="12sp" />
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnDisclaimer"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Avvertenze e condizioni d\'uso" />
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnClearLog" style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Svuota registro" />
+    </LinearLayout>
+</ScrollView>
