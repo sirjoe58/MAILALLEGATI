@@ -9,46 +9,73 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Trova la cartella android
+        shell: bash
+        run: |
+          F=$(find . -path ./.git -prune -o -type f -name gradlew -print | head -1)
+          if [ -z "$F" ]; then
+            echo "::error::Cartella android non trovata: controlla di aver caricato la cartella 'android' completa"
+            find . -path ./.git -prune -o -maxdepth 3 -print
+            exit 1
+          fi
+          echo "ANDROID_DIR=$(dirname "$F")" >> "$GITHUB_ENV"
+          echo "Cartella android: $(dirname "$F")"
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: "17"
       - uses: android-actions/setup-android@v3
       - name: Compila APK
-        working-directory: android
+        shell: bash
         run: |
+          cd "$ANDROID_DIR"
           chmod +x gradlew
-          ./gradlew --no-daemon assembleDebug
-          cp app/build/outputs/apk/debug/app-debug.apk ../MailAllegati.apk
+          ./gradlew --no-daemon --stacktrace assembleDebug
+          mkdir -p "$GITHUB_WORKSPACE/out"
+          cp app/build/outputs/apk/debug/app-debug.apk "$GITHUB_WORKSPACE/out/MailAllegati.apk"
+          cp LEGGIMI_AVVERTENZE.txt "$GITHUB_WORKSPACE/out/" || true
       - uses: actions/upload-artifact@v4
         with:
           name: MailAllegati-Android
-          path: |
-            MailAllegati.apk
-            android/LEGGIMI_AVVERTENZE.txt
+          path: out/
 
   windows:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Trova la cartella windows
+        shell: bash
+        run: |
+          F=$(find . -path ./.git -prune -o -type f -name mail_allegati.py -print | head -1)
+          if [ -z "$F" ]; then
+            echo "::error::Cartella windows non trovata: controlla di aver caricato la cartella 'windows' completa"
+            find . -path ./.git -prune -o -maxdepth 3 -print
+            exit 1
+          fi
+          echo "WIN_DIR=$(dirname "$F")" >> "$GITHUB_ENV"
+          echo "Cartella windows: $(dirname "$F")"
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
       - name: Compila EXE
-        working-directory: windows
+        shell: pwsh
         run: |
+          Set-Location $env:WIN_DIR
           python -m pip install -r requirements.txt
           python -m PyInstaller --noconfirm --onefile --windowed --name MailAllegati --collect-submodules keyring.backends --add-data "LEGGIMI_AVVERTENZE.txt;." mail_allegati.py
+          if ($LASTEXITCODE -ne 0) { exit 1 }
           Copy-Item LEGGIMI_AVVERTENZE.txt dist\
       - name: Crea programma di installazione
-        working-directory: windows
+        shell: pwsh
         run: |
-          if (-not (Test-Path "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe")) { choco install innosetup -y --no-progress }
-          & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" installer.iss
+          Set-Location $env:WIN_DIR
+          $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path $iscc)) { choco install innosetup -y --no-progress }
+          & $iscc installer.iss
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+          New-Item -ItemType Directory -Force "$env:GITHUB_WORKSPACE\out" | Out-Null
+          Copy-Item dist\* "$env:GITHUB_WORKSPACE\out\"
       - uses: actions/upload-artifact@v4
         with:
           name: MailAllegati-Windows
-          path: |
-            windows/dist/MailAllegati-Setup.exe
-            windows/dist/MailAllegati.exe
-            windows/dist/LEGGIMI_AVVERTENZE.txt
+          path: out/
