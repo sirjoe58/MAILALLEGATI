@@ -1,0 +1,82 @@
+﻿MAILALLEGATI – AVVERTENZE, MODALITÀ D'USO E LIMITAZIONE DI RESPONSABILITÀ
+Versione 1 – ottobre 2026
+
+Leggere attentamente prima di installare o utilizzare il programma.
+Installando, avviando o usando MailAllegati (versione Windows o Android) dichiari di aver letto, compreso e accettato integralmente quanto segue. Se non accetti, non installare e non usare il programma.
+
+
+1. COSA FA IL PROGRAMMA
+
+MailAllegati si collega a una casella di posta tramite il protocollo IMAP con le credenziali inserite dall'utente, individua le email provenienti dai mittenti indicati dall'utente, ne estrae gli allegati e li salva nelle cartelle scelte dall'utente e, se attivato, li copia su un dispositivo di rete (NAS) tramite il protocollo SMB.
+Il programma non invia dati a terzi: comunica solo con il server di posta e con il NAS configurati dall'utente.
+
+
+2. MODALITÀ D'USO
+
+a) Inserire server IMAP, porta, utente e password della propria casella e premere "Prova connessione email".
+b) Inserire i mittenti da controllare, uno per riga: indirizzo completo (es. fatture@ditta.it) oppure dominio (es. @ditta.it).
+c) Scegliere una o più cartelle di destinazione. Gli allegati vengono salvati in tutte le cartelle indicate.
+d) Facoltativo: attivare il NAS indicando percorso (es. \\192.168.1.10\condivisa\allegati), utente e password, e premere "Prova connessione NAS".
+   Se il NAS è spento o irraggiungibile, gli allegati vengono messi in coda sul dispositivo e inviati automaticamente appena il NAS torna raggiungibile. La coda occupa spazio sul dispositivo; su Android viene cancellata se si disinstalla l'app o se ne cancellano i dati. I pulsanti "Invia ora al NAS" e "Svuota coda" permettono di gestirla manualmente.
+e) Avviare il monitoraggio. Su Windows il controllo avviene mentre il programma è aperto (anche ridotto a icona o avviato con Windows). Su Android avviene in background, al massimo ogni 15 minuti, secondo le regole di risparmio energetico del sistema.
+f) Per impostazione predefinita vengono elaborate solo le email arrivate dopo l'attivazione. L'opzione "elabora anche le email già presenti" recupera gli allegati delle email esistenti.
+g) Consultare periodicamente il "Registro attività" per verificare il corretto funzionamento.
+
+
+3. AVVERTENZE
+
+- Il programma NON sostituisce un sistema di backup. Conserva sempre le email originali e copie di sicurezza dei tuoi dati.
+- Il buon funzionamento dipende da fattori esterni non controllabili dall'autore: server di posta, connessione Internet, rete locale, NAS, sistema operativo, aggiornamenti, impostazioni di risparmio energetico, antivirus e firewall. Alcune email o allegati potrebbero non essere rilevati, salvati o caricati, oppure esserlo con ritardo.
+- Gli allegati possono contenere virus o software dannoso. Il programma NON esegue alcun controllo antivirus. Mantieni attivo e aggiornato un antivirus e non aprire file di cui non sei sicuro.
+- Verifica che le cartelle di destinazione e il NAS abbiano spazio sufficiente. Il programma non gestisce l'esaurimento dello spazio.
+- Se attivi l'opzione "segna come lette", lo stato delle email nella casella viene modificato.
+- Le credenziali sono conservate sul dispositivo con i sistemi di protezione disponibili (Gestione credenziali di Windows; archivio cifrato di Android). Proteggi il dispositivo con password o blocco schermo: chiunque abbia accesso al dispositivo potrebbe accedere al programma e alle sue impostazioni.
+- Su Windows, al primo avvio, il sistema potrebbe segnalare il programma come "non riconosciuto" perché non firmato digitalmente.
+
+
+4. USO CONSENTITO E DIVIETO DI USO ILLECITO
+
+Il programma può essere usato esclusivamente:
+- su caselle di posta di cui sei titolare, oppure per le quali hai un'autorizzazione esplicita del titolare;
+- su NAS, cartelle e dispositivi di tua proprietà o per i quali sei autorizzato.
+
+È VIETATO ogni uso illecito, tra cui a titolo di esempio:
+- accedere senza autorizzazione a caselle email, account, reti o dispositivi altrui;
+- intercettare, copiare o conservare corrispondenza o dati di terzi senza averne il diritto;
+- trattare dati personali in violazione del Regolamento UE 2016/679 (GDPR) e della normativa sulla privacy;
+- violare il segreto della corrispondenza, i diritti d'autore o altri diritti di terzi.
+
+Se usi il programma per conto di un'azienda o per dati di terzi, sei tu il responsabile del rispetto delle norme sulla protezione dei dati e degli obblighi verso le persone interessate. L'autore non è in alcun modo responsabile dell'uso illecito o non autorizzato del programma: ogni conseguenza civile, penale o amministrativa ricade esclusivamente su chi lo ha commesso.
+
+
+5. ESCLUSIONE DI GARANZIA
+
+Il programma è fornito "COSÌ COM'È" ("AS IS"), senza garanzie di alcun tipo, esplicite o implicite, incluse a titolo esemplificativo le garanzie di funzionamento, assenza di errori, continuità del servizio, idoneità a uno scopo particolare, compatibilità con dispositivi, server o servizi specifici.
+
+
+6. LIMITAZIONE DI RESPONSABILITÀ
+
+Nei limiti massimi consentiti dalla legge applicabile, l'autore e chiunque abbia contribuito alla realizzazione o distribuzione del programma non sono responsabili per alcun danno, diretto o indiretto, derivante dall'uso o dall'impossibilità di usare il programma, inclusi ma non limitati a:
+- perdita, danneggiamento, cancellazione, sovrascrittura o mancato salvataggio di file, email o dati;
+- mancato o ritardato rilevamento di email o allegati, con le conseguenze che ne derivano (ad esempio scadenze, pagamenti, adempimenti);
+- malfunzionamenti, blocchi o danni a computer, telefoni, NAS, reti o altri dispositivi;
+- diffusione di virus o software dannoso contenuto negli allegati;
+- accessi non autorizzati dovuti a credenziali o dispositivi non adeguatamente protetti;
+- danni economici, mancati guadagni, interruzioni di attività.
+
+Restano salve le responsabilità che per legge non possono essere escluse.
+
+
+7. RESPONSABILITÀ DELL'UTENTE
+
+Ciascun utente usa il programma a proprio rischio e si assume la piena ed esclusiva responsabilità:
+- della correttezza delle impostazioni inserite;
+- della legittimità dell'uso e dei dati trattati;
+- della sicurezza delle proprie credenziali e dei propri dispositivi;
+- della verifica dei file salvati e dell'esecuzione di regolari copie di sicurezza.
+
+
+8. ACCETTAZIONE
+
+Al primo avvio il programma mostra questo documento e non prosegue finché non viene espressamente accettato. In caso di mancata accettazione il programma si chiude e non deve essere utilizzato. Il documento resta consultabile in qualsiasi momento dal programma (pulsante "Avvertenze").
+Se una nuova versione del programma modifica queste condizioni, verrà richiesta una nuova accettazione.
