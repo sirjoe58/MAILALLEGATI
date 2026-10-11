@@ -20,17 +20,29 @@ jobs:
           fi
           echo "ANDROID_DIR=$(dirname "$F")" >> "$GITHUB_ENV"
           echo "Cartella android: $(dirname "$F")"
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: "17"
-      - uses: android-actions/setup-android@v3
       - name: Compila APK
         shell: bash
         run: |
           cd "$ANDROID_DIR"
+          SDK="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
+          echo "Android SDK: $SDK"
+          echo "sdk.dir=$SDK" > local.properties
           chmod +x gradlew
-          ./gradlew --no-daemon --stacktrace assembleDebug
+          set +e
+          ./gradlew --no-daemon --stacktrace assembleDebug 2>&1 | tee build.log
+          RC=${PIPESTATUS[0]}
+          set -e
+          if [ "$RC" -ne 0 ]; then
+            # riporta gli errori come annotazioni (visibili anche senza aprire il registro)
+            grep -E "^e: |error:|What went wrong|Could not|Execution failed|> " build.log | head -40 | while IFS= read -r l; do
+              echo "::error::${l//%/%25}"
+            done
+            exit 1
+          fi
           mkdir -p "$GITHUB_WORKSPACE/out"
           cp app/build/outputs/apk/debug/app-debug.apk "$GITHUB_WORKSPACE/out/MailAllegati.apk"
           cp LEGGIMI_AVVERTENZE.txt "$GITHUB_WORKSPACE/out/" || true
