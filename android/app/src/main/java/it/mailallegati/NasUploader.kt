@@ -20,6 +20,9 @@ class NasUploader(s: Settings) : AutoCloseable {
             setProperty("jcifs.smb.client.soTimeout", "35000")
             setProperty("jcifs.smb.client.connTimeout", "15000")
             setProperty("jcifs.resolveOrder", "DNS,BCAST")
+            // compatibile anche con NAS vecchi (SMB1) e recenti (SMB3)
+            setProperty("jcifs.smb.client.minVersion", "SMB1")
+            setProperty("jcifs.smb.client.maxVersion", "SMB311")
         }
         val base = BaseContext(PropertyConfiguration(props))
         ctx = if (s.nasUser.isBlank()) {

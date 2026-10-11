@@ -220,21 +220,63 @@ def parse_nas_path(path):
     port = 445
     if ":" in server:
         server, port_s = server.rsplit(":", 1)
-        port = int(port_s)
+        port_s = port_s.strip()
+        if port_s:
+            if not port_s.isdigit():
+                raise ValueError(f"Porta NAS non valida: '{port_s}'")
+            port = int(port_s)
+    if not server:
+        raise ValueError("Percorso NAS non valido: manca l'indirizzo del NAS")
     unc = "\\\\" + server + "\\" + "\\".join(parts[1:])
     return server, port, unc
 
 
+def friendly_nas_error(server, port, err):
+    """Traduce gli errori di rete/SMB in un messaggio comprensibile."""
+    t = str(err)
+    low = t.lower()
+    if any(k in low for k in ("timed out", "10060", "winerror 53", "winerror 64",
+                              "no route", "unreachable", "10065", "10061", "connection refused")):
+        return (f"Il NAS {server} non risponde come cartella condivisa (porta {port}). "
+                "Controlla che il NAS sia acceso, che l'indirizzo sia giusto e che sul NAS sia attiva "
+                "la condivisione file Windows/SMB. [{}]".format(t[:150]))
+    if any(k in low for k in ("logon_failure", "access_denied", "access is denied", "accesso negato",
+                              "winerror 5]", "winerror 1326", "winerror 86", "password", "1326")):
+        return f"Utente o password del NAS non accettati, oppure l'utente non ha i permessi sulla cartella. [{t[:150]}]"
+    if any(k in low for k in ("bad_network_name", "winerror 67", "network name")):
+        return f"La cartella condivisa indicata non esiste sul NAS: controlla il nome dopo l'indirizzo. [{t[:150]}]"
+    return t
+
+
 class NasClient:
+    """Scrive sul NAS. Su Windows usa prima la condivisione di rete del sistema
+    (funziona con qualsiasi NAS che si apre da Esplora file), altrimenti il client SMB integrato."""
+
     def __init__(self, cfg, password):
         self.cfg = cfg
         self.password = password
         self.server, self.port, self.base = parse_nas_path(cfg["nas_path"])
-        self._ready = False
+        self.mode = None   # "windows" oppure "smb"
 
-    def _connect(self):
-        if self._ready:
-            return
+    # --- modalita' Windows (come Esplora file)
+    def _share_root(self):
+        parts = [x for x in self.base.split("\\") if x]
+        return "\\\\" + parts[0] + "\\" + parts[1]
+
+    def _native_connect(self):
+        user = (self.cfg.get("nas_user") or "").strip()
+        if user:
+            if self.cfg.get("nas_domain"):
+                user = self.cfg["nas_domain"].strip() + "\\" + user
+            import subprocess
+            subprocess.run(["net", "use", self._share_root(), self.password or "", "/user:" + user,
+                            "/persistent:no"], capture_output=True, timeout=40,
+                           creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+        os.makedirs(self.base, exist_ok=True)
+        os.listdir(self.base)
+
+    # --- modalita' SMB integrata
+    def _smb_connect(self):
         import smbclient
         user = self.cfg.get("nas_user") or None
         if user and self.cfg.get("nas_domain"):
@@ -243,27 +285,58 @@ class NasClient:
                                    port=self.port, connection_timeout=15,
                                    auth_protocol="ntlm" if user else "negotiate",
                                    require_signing=False)
-        self._ready = True
+        smbclient.makedirs(self.base, exist_ok=True, port=self.port)
+
+    def _connect(self):
+        if self.mode:
+            return
+        errors = []
+        if os.name == "nt" and self.port == 445:
+            try:
+                self._native_connect()
+                self.mode = "windows"
+                return
+            except Exception as e:
+                errors.append(e)
+        try:
+            self._smb_connect()
+            self.mode = "smb"
+            return
+        except Exception as e:
+            errors.append(e)
+        # l'errore piu' significativo e' di solito il primo (quello di Windows)
+        raise ConnectionError(friendly_nas_error(self.server, self.port, errors[0]))
 
     def test(self):
-        import smbclient
         self._connect()
-        smbclient.makedirs(self.base, exist_ok=True, port=self.port)
+        if self.mode == "windows":
+            return os.listdir(self.base)
+        import smbclient
         return smbclient.listdir(self.base, port=self.port)
 
     def upload(self, rel_dir, filename, data):
         """Carica prima con nome temporaneo e poi rinomina: niente file a meta' se il NAS cade."""
-        import smbclient
         self._connect()
         target_dir = self.base
         if rel_dir:
             target_dir = target_dir + "\\" + rel_dir.replace("/", "\\")
-        smbclient.makedirs(target_dir, exist_ok=True, port=self.port)
+        base, ext = os.path.splitext(filename)
         tmp = target_dir + "\\" + filename + ".parziale"
+        target = target_dir + "\\" + filename
+        if self.mode == "windows":
+            os.makedirs(target_dir, exist_ok=True)
+            with open(tmp, "wb") as f:
+                f.write(data)
+            n = 1
+            while os.path.exists(target):
+                target = f"{target_dir}\\{base} ({n}){ext}"
+                n += 1
+            os.rename(tmp, target)
+            return target
+        import smbclient
+        smbclient.makedirs(target_dir, exist_ok=True, port=self.port)
         with smbclient.open_file(tmp, mode="wb", port=self.port) as f:
             f.write(data)
-        base, ext = os.path.splitext(filename)
-        target = target_dir + "\\" + filename
         n = 1
         while smbclient.path.exists(target, port=self.port):
             target = f"{target_dir}\\{base} ({n}){ext}"
@@ -272,13 +345,13 @@ class NasClient:
         return target
 
     def close(self):
-        if self._ready:
+        if self.mode == "smb":
             try:
                 import smbclient
                 smbclient.reset_connection_cache()
             except Exception:
                 pass
-            self._ready = False
+        self.mode = None
 
 
 # ---------------------------------------------------------------- coda NAS
