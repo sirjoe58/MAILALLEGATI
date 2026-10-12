@@ -1,33 +1,25 @@
 # MailAllegati
 
-Controlla automaticamente la tua casella email, prende le email dei **mittenti che scegli**, salva gli **allegati** in una o più cartelle e, se vuoi, li carica anche sul **NAS**.
-Funziona su **Windows** e **Android**.
+**Salva automaticamente gli allegati delle email** dei mittenti che scegli in una o più cartelle e, se vuoi, anche sul **NAS** di casa (FRITZ!Box, Synology, QNAP… qualsiasi cartella di rete Windows/SMB).
+Gratuito e open source, per **Windows** e **Android**. Interfaccia in italiano.
 
-> **Avvertenze obbligatorie** – Ogni versione contiene il file `LEGGIMI_AVVERTENZE.txt` (modalità d'uso, avvertenze, divieto di uso illecito, esclusione di garanzia e limitazione di responsabilità).
-> - **Windows (installazione):** la pagina "Contratto di licenza" mostra il testo e l'installazione non prosegue senza accettarlo.
-> - **Windows e Android (primo avvio):** il programma mostra le avvertenze; si possono accettare solo dopo averle scorse fino in fondo e spuntato la casella. Rifiutando, il programma si chiude e i controlli automatici non vengono eseguiti.
-> - Il testo resta consultabile dal pulsante **Avvertenze**. Se in futuro modifichi il testo, aumenta il numero di versione (`DISCLAIMER_VERSION` in `windows/mail_core.py` e `android/.../Settings.kt`) per richiedere una nuova accettazione.
+## Funzioni principali
+- Controlla la casella email (IMAP) a intervalli regolari, anche in background.
+- Filtra per **mittente** (indirizzo o dominio) e per **parole nell'oggetto** (es. `fattura, bolletta`).
+- Salva gli allegati in **più cartelle** e li **rinomina** con data e mittente: `2026-10-12_Enel_FT_000123.pdf`.
+- Copia sul **NAS**; se il NAS è spento li mette in **coda** e li invia appena torna raggiungibile.
+- **Niente doppioni**, **notifiche**, icona accanto all'orologio di Windows, avvio con Windows.
+- Password custodite nella Gestione credenziali di Windows / cifrate su Android.
 
----
+## Download
+Vai su **[Releases](../../releases/latest)** e scarica:
+- **Windows:** `MailAllegati-Setup.exe` (installazione) oppure `MailAllegati-portatile.exe` (senza installazione).
+  Windows potrebbe mostrare «PC protetto da Windows» perché il programma non è firmato: *Ulteriori informazioni › Esegui comunque*.
+- **Android:** `MailAllegati-Android.apk` (consenti l'installazione da origini sconosciute quando richiesto).
 
-## 1. Ottenere i programmi pronti (.exe e .apk) – consigliato
+> **Avvertenze** – Prima del primo utilizzo il programma mostra `LEGGIMI_AVVERTENZE.txt` (modalità d'uso, divieto di uso illecito, esclusione di garanzia e limitazione di responsabilità) e non prosegue senza accettazione. Usalo solo su caselle e dispositivi tuoi o per cui sei autorizzato.
 
-1. Crea un account gratuito su https://github.com (se non ce l'hai).
-2. In alto a destra: **+ › New repository** → nome `MailAllegati` → **Private** → *Create repository*.
-3. Nella pagina del nuovo repository clicca **uploading an existing file** e trascina **tutto il contenuto** di questa cartella (anche la cartella nascosta `.github`). Poi *Commit changes*.
-   > Se Windows non mostra `.github`, in Esplora file attiva *Visualizza › Elementi nascosti*.
-4. Apri la scheda **Actions**: parte da sola la compilazione (circa 5–10 minuti).
-5. Quando c'è la spunta verde, apri l'esecuzione e in fondo, in **Artifacts**, scarica:
-   - `MailAllegati-Windows` → **MailAllegati-Setup.exe** (installazione con accettazione delle avvertenze), **MailAllegati.exe** (versione portatile) e le avvertenze
-   - `MailAllegati-Android` → **MailAllegati.apk** e le avvertenze
-
-In alternativa:
-- **Windows**: installa Python da python.org (e, per il programma di installazione, Inno Setup 6 da jrsoftware.org) e fai doppio clic su `windows\build_exe.bat`.
-- **Android**: apri la cartella `android` con Android Studio e premi *Run*.
-
----
-
-## 2. Configurazione (uguale su Windows e Android)
+## Configurazione (uguale su Windows e Android)
 
 ### Casella email (IMAP)
 | Provider | Server | Porta |
@@ -49,7 +41,7 @@ Aggiungi una o più cartelle: ogni allegato viene salvato in **tutte**.
 Opzioni: solo certi tipi di file (es. `pdf, xml`), sottocartella per mittente, sottocartella per mese, segna come lette.
 Se un file con lo stesso nome esiste già, viene salvato come `nome (1).pdf`.
 
-### Novità della versione 1.3
+### Altre opzioni
 - **Nomi chiari:** i file vengono rinominati con data e mittente, es. `FT_000123.pdf` → `2026-10-12_Enel_FT_000123.pdf`. Il modello si cambia in *Cartelle di destinazione* (`{data}`, `{mittente}`, `{nome}`, `{oggetto}`).
 - **Filtro sull'oggetto:** in *Email e mittenti* puoi indicare parole come `fattura, bolletta`: vengono salvati solo gli allegati delle email il cui oggetto ne contiene almeno una.
 - **Niente doppioni:** un file identico a uno già salvato non viene salvato di nuovo.
@@ -74,17 +66,29 @@ Se vuoi recuperare anche gli allegati delle email già presenti, spunta **"Al pr
 
 ---
 
-## 3. Windows
+## Windows
 - **Avvia monitoraggio**: controlla ogni N minuti finché il programma è aperto.
 - **Avvia automaticamente con Windows**: parte ridotto a icona all'accensione del PC, con il monitoraggio attivo.
 - Le password sono custodite nella *Gestione credenziali* di Windows.
 - Impostazioni e registro: `%APPDATA%\MailAllegati`.
 - Al primo avvio dell'exe Windows potrebbe mostrare "PC protetto da Windows": clicca *Ulteriori informazioni › Esegui comunque* (succede con i programmi non firmati).
 
-## 4. Android
+## Android
 - Installa l'apk (consenti "installa app sconosciute" quando richiesto).
 - Le cartelle si scelgono con il selettore di Android (memoria interna, SD, ecc.).
 - Attiva **Monitoraggio automatico**: funziona anche ad app chiusa e dopo il riavvio.
   Android consente al massimo un controllo ogni **15 minuti**.
 - Premi **Escludi dal risparmio batteria**, altrimenti alcuni telefoni (Xiaomi, Huawei, Samsung…) ritardano i controlli.
 - Le password sono salvate cifrate nel telefono.
+
+---
+
+## Compilare da soli
+Il progetto si compila automaticamente con GitHub Actions (`.github/workflows/build.yml`): fai un fork, apri la scheda **Actions** e scarica i file da **Artifacts**.
+- `windows/` – Python + Tkinter, impacchettato con PyInstaller e Inno Setup (`build_exe.bat` per compilare in locale).
+- `android/` – Kotlin, apribile con Android Studio.
+- Firma Android: impostare i Secrets `ANDROID_KEYSTORE_B64` e `ANDROID_KEYSTORE_PASSWORD` (alias `mailallegati`); senza, l'apk viene firmato con una chiave di prova.
+- Una nuova release si pubblica creando un tag `vX.Y.Z`.
+
+## Licenza
+[MIT](LICENSE) – libero uso, modifica e ridistribuzione, mantenendo l'avviso di copyright. Il software è fornito «così com'è», senza garanzie (vedi anche `LEGGIMI_AVVERTENZE.txt`).

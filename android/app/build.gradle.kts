@@ -15,24 +15,29 @@ android {
         versionName = "1.3"
     }
 
-    // Chiave di firma fissa: cosi' ogni nuova versione si installa sopra la precedente
-    // senza disinstallare (e senza perdere impostazioni e coda NAS).
+    // Firma: la chiave NON e' nel repository. La compilazione su GitHub la legge dai Secrets
+    // (ANDROID_KEYSTORE_B64 / ANDROID_KEYSTORE_PASSWORD). Senza, si usa la chiave di debug.
+    val ksPath = System.getenv("ANDROID_KEYSTORE_FILE")
+    val ksPass = System.getenv("ANDROID_KEYSTORE_PASSWORD")
+    val hasKey = !ksPath.isNullOrBlank() && file(ksPath).exists() && !ksPass.isNullOrBlank()
     signingConfigs {
-        create("fissa") {
-            storeFile = file("mailallegati.keystore")
-            storePassword = "mailallegati"
-            keyAlias = "mailallegati"
-            keyPassword = "mailallegati"
+        if (hasKey) {
+            create("rilascio") {
+                storeFile = file(ksPath!!)
+                storePassword = ksPass
+                keyAlias = "mailallegati"
+                keyPassword = ksPass
+            }
         }
     }
 
     buildTypes {
         debug {
-            signingConfig = signingConfigs.getByName("fissa")
+            if (hasKey) signingConfig = signingConfigs.getByName("rilascio")
         }
         release {
             isMinifyEnabled = false
-            signingConfig = signingConfigs.getByName("fissa")
+            if (hasKey) signingConfig = signingConfigs.getByName("rilascio")
         }
     }
     compileOptions {

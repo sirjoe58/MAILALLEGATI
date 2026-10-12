@@ -2,7 +2,12 @@ name: Compila MailAllegati
 
 on:
   push:
+    branches: ["**"]
+    tags: ["v*"]
   workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   android:
@@ -26,7 +31,17 @@ jobs:
           java-version: "17"
       - name: Compila APK
         shell: bash
+        env:
+          KS_B64: ${{ secrets.ANDROID_KEYSTORE_B64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
         run: |
+          if [ -n "$KS_B64" ]; then
+            echo "$KS_B64" | base64 -d > "$RUNNER_TEMP/rilascio.keystore"
+            export ANDROID_KEYSTORE_FILE="$RUNNER_TEMP/rilascio.keystore"
+            echo "Firma con la chiave dei Secrets"
+          else
+            echo "::warning::Secrets della chiave Android mancanti: l'apk e' firmato con una chiave di prova"
+          fi
           cd "$ANDROID_DIR"
           SDK="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
           echo "Android SDK: $SDK"
@@ -91,3 +106,24 @@ jobs:
         with:
           name: MailAllegati-Windows
           path: out/
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [android, windows]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+      - name: Pubblica la release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir up
+          cp dist/MailAllegati-Windows/MailAllegati-Setup.exe up/
+          cp dist/MailAllegati-Windows/MailAllegati.exe up/MailAllegati-portatile.exe
+          cp dist/MailAllegati-Android/MailAllegati.apk up/MailAllegati-Android.apk
+          cp dist/MailAllegati-Windows/LEGGIMI_AVVERTENZE.txt up/
+          gh release create "$GITHUB_REF_NAME" up/* -R "$GITHUB_REPOSITORY" \
+            --title "MailAllegati $GITHUB_REF_NAME" \
+            --notes "Scarica MailAllegati-Setup.exe per Windows oppure MailAllegati-Android.apk per Android. Prima dell'uso leggi LEGGIMI_AVVERTENZE.txt."
