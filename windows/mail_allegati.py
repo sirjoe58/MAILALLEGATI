@@ -99,7 +99,7 @@ def show_disclaimer(parent=None, require_accept=True):
 class App(tk.Tk):
     def __init__(self, auto=False):
         super().__init__()
-        self.title("MailAllegati - salva allegati email")
+        self.title(f"MailAllegati {core.APP_VERSION} - salva allegati email")
         self.geometry("820x760")
         self.minsize(720, 600)
         self.cfg = core.load_config()
