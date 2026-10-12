@@ -145,7 +145,7 @@ class App(tk.Tk):
     def __init__(self, auto=False):
         super().__init__()
         self.title(f"MailAllegati {core.APP_VERSION} - salva allegati email")
-        self.geometry("820x760")
+        self.geometry("860x820")
         self.minsize(720, 600)
         self.cfg = core.load_config()
         self.logq = queue.Queue()
@@ -198,19 +198,19 @@ class App(tk.Tk):
             row=len(rows) + 1, column=1, sticky="w", **PAD)
 
         ttk.Label(f1, text="Mittenti da controllare\n(uno per riga: indirizzo completo\noppure @dominio.it per tutto il dominio)").grid(
-            row=len(rows) + 2, column=0, sticky="nw", **PAD)
-        self.t_senders = tk.Text(f1, height=8, width=45)
-        self.t_senders.grid(row=len(rows) + 2, column=1, sticky="nsew", **PAD)
+            row=len(rows) + 3, column=0, sticky="nw", **PAD)
+        self.t_senders = tk.Text(f1, height=6, width=45)
+        self.t_senders.grid(row=len(rows) + 3, column=1, sticky="nsew", **PAD)
         self.v_keywords = tk.StringVar()
         ttk.Label(f1, text="Solo se l'oggetto contiene\n(vuoto = tutte le email)").grid(
-            row=len(rows) + 3, column=0, sticky="nw", **PAD)
+            row=len(rows) + 2, column=0, sticky="nw", **PAD)
         kf = ttk.Frame(f1)
-        kf.grid(row=len(rows) + 3, column=1, sticky="we", **PAD)
+        kf.grid(row=len(rows) + 2, column=1, sticky="we", **PAD)
         ttk.Entry(kf, textvariable=self.v_keywords).pack(fill="x")
         ttk.Label(kf, foreground="gray",
                   text="Parole separate da virgola, es: fattura, bolletta (maiuscole/minuscole non contano)").pack(anchor="w")
         f1.columnconfigure(1, weight=1)
-        f1.rowconfigure(len(rows) + 2, weight=1)
+        f1.rowconfigure(len(rows) + 3, weight=1)
 
         # --- Cartelle
         f2 = ttk.Frame(nb)
@@ -348,7 +348,7 @@ class App(tk.Tk):
 
         lg = ttk.LabelFrame(self, text="Registro attività")
         lg.pack(fill="both", expand=True, padx=8, pady=(0, 8))
-        self.t_log = tk.Text(lg, height=10, state="disabled", wrap="word")
+        self.t_log = tk.Text(lg, height=7, state="disabled", wrap="word")
         sb = ttk.Scrollbar(lg, command=self.t_log.yview)
         self.t_log.configure(yscrollcommand=sb.set)
         self.t_log.pack(side="left", fill="both", expand=True)
