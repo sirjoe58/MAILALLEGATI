@@ -5,6 +5,11 @@ on:
     branches: ["**"]
     tags: ["v*"]
   workflow_dispatch:
+    inputs:
+      pubblica:
+        description: "Pubblica una nuova release (versione presa dal programma)"
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -108,10 +113,14 @@ jobs:
           path: out/
 
   release:
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: >-
+      startsWith(github.ref, 'refs/tags/v') ||
+      (github.event_name == 'workflow_dispatch' && inputs.pubblica) ||
+      (github.event_name == 'push' && contains(github.event.head_commit.message, '[release]'))
     needs: [android, windows]
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
           path: dist
@@ -124,6 +133,17 @@ jobs:
           cp dist/MailAllegati-Windows/MailAllegati.exe up/MailAllegati-portatile.exe
           cp dist/MailAllegati-Android/MailAllegati.apk up/MailAllegati-Android.apk
           cp dist/MailAllegati-Windows/LEGGIMI_AVVERTENZE.txt up/
-          gh release create "$GITHUB_REF_NAME" up/* -R "$GITHUB_REPOSITORY" \
-            --title "MailAllegati $GITHUB_REF_NAME" \
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            TAG="$GITHUB_REF_NAME"
+          else
+            VER=$(grep -m1 -oP 'APP_VERSION = "\K[^"]+' windows/mail_core.py)
+            TAG="v$VER"
+          fi
+          echo "Release: $TAG"
+          if gh release view "$TAG" -R "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "::error::La release $TAG esiste gia': aumenta APP_VERSION in windows/mail_core.py"
+            exit 1
+          fi
+          gh release create "$TAG" up/* -R "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
+            --title "MailAllegati $TAG" \
             --notes "Scarica MailAllegati-Setup.exe per Windows oppure MailAllegati-Android.apk per Android. Prima dell'uso leggi LEGGIMI_AVVERTENZE.txt."
