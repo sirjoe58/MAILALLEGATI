@@ -37,9 +37,15 @@ class CheckWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(ctx,
                 log.add("Avvertenze non accettate: controllo non eseguito")
                 return@withContext Result.success()
             }
-            val n = MailChecker(applicationContext, s, log::add).check()
+            val checker = MailChecker(applicationContext, s, log::add)
+            val n = checker.check()
             log.add(if (n > 0) "Controllo completato: $n allegati salvati" else "Controllo completato: nessun nuovo allegato")
-            if (n > 0 && s.notify) notify(applicationContext, "Salvati $n allegati", "Tocca per aprire MailAllegati")
+            if (n > 0 && s.notify) {
+                val names = checker.savedNames
+                val title = if (names.size == 1) "Salvato 1 allegato" else "Salvati ${names.size} allegati"
+                val text = names.take(4).joinToString("\n") + if (names.size > 4) "\n… e altri ${names.size - 4}" else ""
+                notify(applicationContext, title, text)
+            }
         } catch (e: Exception) {
             log.add("ERRORE: ${e.message ?: e.javaClass.simpleName}")
         } finally {
@@ -89,7 +95,8 @@ class CheckWorker(ctx: Context, params: WorkerParameters) : CoroutineWorker(ctx,
             val n = NotificationCompat.Builder(context, CHANNEL)
                 .setSmallIcon(R.drawable.ic_notify)
                 .setContentTitle(title)
-                .setContentText(text)
+                .setContentText(text.lineSequence().firstOrNull() ?: text)
+                .setStyle(NotificationCompat.BigTextStyle().bigText(text))
                 .setContentIntent(pi)
                 .setAutoCancel(true)
                 .build()

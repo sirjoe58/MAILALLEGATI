@@ -61,6 +61,14 @@ class Settings(context: Context) {
     var processExisting: Boolean get() = bool("process_existing", false); set(v) = setBool("process_existing", v)
     var notify: Boolean get() = bool("notify", true); set(v) = setBool("notify", v)
 
+    // novita' 1.3
+    var subjectKeywords: String get() = str("subject_keywords"); set(v) = setStr("subject_keywords", v.trim())
+    var renameEnabled: Boolean get() = bool("rename_enabled", true); set(v) = setBool("rename_enabled", v)
+    var renameTemplate: String
+        get() = str("rename_template", "{data}_{mittente}_{nome}").ifBlank { "{data}_{mittente}_{nome}" }
+        set(v) = setStr("rename_template", v.trim())
+    var skipDuplicates: Boolean get() = bool("skip_duplicates", true); set(v) = setBool("skip_duplicates", v)
+
     var nasEnabled: Boolean get() = bool("nas_enabled", false); set(v) = setBool("nas_enabled", v)
     var nasPath: String get() = str("nas_path"); set(v) = setStr("nas_path", v.trim())
     var nasUser: String get() = str("nas_user"); set(v) = setStr("nas_user", v.trim())

@@ -26,6 +26,8 @@ class MailChecker(
     private val s: Settings,
     private val log: (String) -> Unit
 ) {
+    /** Nomi dei file salvati nell'ultimo controllo (per la notifica). */
+    val savedNames = mutableListOf<String>()
     private fun connect(): Store {
         val proto = if (s.imapSsl) "imaps" else "imap"
         val props = Properties().apply {
@@ -122,12 +124,17 @@ class MailChecker(
                     .filter { it.first >= start }
                     .sortedBy { it.first }
 
+                val hashes = HashStore(context)
                 for ((uid, m) in todo) {
-                    val addrs = (m.from ?: emptyArray())
-                        .mapNotNull { (it as? InternetAddress)?.address?.lowercase() }
-                    val match = addrs.firstOrNull { Util.senderMatches(it, senders) }
+                    val fromList = (m.from ?: emptyArray()).mapNotNull { it as? InternetAddress }
+                    val fromMatch = fromList.firstOrNull { a -> a.address != null && Util.senderMatches(a.address.lowercase(), senders) }
+                    var match = fromMatch?.address?.lowercase()
+                    val subject = m.subject ?: ""
+                    if (match != null && !Util.subjectMatches(subject, s.subjectKeywords)) {
+                        log("Email da $match \"$subject\": l'oggetto non contiene le parole scelte, ignorata")
+                        match = null
+                    }
                     if (match != null) {
-                        val subject = m.subject ?: ""
                         val atts = mutableListOf<Pair<String, ByteArray>>()
                         collect(m, atts, exts)
                         if (atts.isEmpty()) {
@@ -136,7 +143,17 @@ class MailChecker(
                             val sub = mutableListOf<String>()
                             if (s.subPerSender) sub += Util.safeName(match)
                             if (s.subPerMonth) sub += Util.monthFolder()
-                            for ((name, data) in atts) {
+                            val mittente = Util.senderLabel(fromMatch?.personal, match)
+                            val dataMail = Util.dayString(m.sentDate ?: m.receivedDate)
+                            for ((origName, data) in atts) {
+                                val hsh = Util.sha256(data)
+                                if (s.skipDuplicates && hashes.contains(hsh)) {
+                                    log("Doppione già salvato in precedenza, saltato: $origName")
+                                    continue
+                                }
+                                val name = if (s.renameEnabled)
+                                    Util.buildFilename(s.renameTemplate, origName, dataMail, mittente, subject)
+                                else origName
                                 for (f in folders) {
                                     try {
                                         val where = saveToFolder(Uri.parse(f), sub, name, data)
@@ -163,6 +180,9 @@ class MailChecker(
                                     }
                                 }
                                 saved++
+                                hashes.add(hsh)
+                                hashes.save()
+                                savedNames += name
                             }
                         }
                         if (s.markRead) m.setFlag(Flags.Flag.SEEN, true)
