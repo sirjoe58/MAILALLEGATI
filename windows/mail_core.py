@@ -16,6 +16,7 @@ from email.header import decode_header, make_header
 from email.utils import getaddresses
 
 APP_NAME = "MailAllegati"
+APP_VERSION = "1.2"
 APP_DIR = os.path.join(os.environ.get("APPDATA") or os.path.expanduser("~"), APP_NAME)
 CONFIG_FILE = os.path.join(APP_DIR, "config.json")
 STATE_FILE = os.path.join(APP_DIR, "stato.json")
