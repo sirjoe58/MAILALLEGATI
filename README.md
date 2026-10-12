@@ -88,7 +88,7 @@ Il progetto si compila automaticamente con GitHub Actions (`.github/workflows/bu
 - `windows/` – Python + Tkinter, impacchettato con PyInstaller e Inno Setup (`build_exe.bat` per compilare in locale).
 - `android/` – Kotlin, apribile con Android Studio.
 - Firma Android: impostare i Secrets `ANDROID_KEYSTORE_B64` e `ANDROID_KEYSTORE_PASSWORD` (alias `mailallegati`); senza, l'apk viene firmato con una chiave di prova.
-- Una nuova release si pubblica creando un tag `vX.Y.Z`.
+- Nuova release: aumenta `APP_VERSION` in `windows/mail_core.py`, poi in **Actions › Compila MailAllegati › Run workflow** spunta *Pubblica una nuova release* (oppure scrivi `[release]` nel messaggio del commit).
 
 ## Licenza
 [MIT](LICENSE) – libero uso, modifica e ridistribuzione, mantenendo l'avviso di copyright. Il software è fornito «così com'è», senza garanzie (vedi anche `LEGGIMI_AVVERTENZE.txt`).
