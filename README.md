@@ -1,7 +1,22 @@
-# MailAllegati
+# MailAllegati – salva automaticamente gli allegati delle email
 
-**Salva automaticamente gli allegati delle email** dei mittenti che scegli in una o più cartelle e, se vuoi, anche sul **NAS** di casa (FRITZ!Box, Synology, QNAP… qualsiasi cartella di rete Windows/SMB).
-Gratuito e open source, per **Windows** e **Android**. Interfaccia in italiano.
+[![Download totali](https://img.shields.io/github/downloads/sirjoe58/MAILALLEGATI/total?label=download&color=1F6F8B)](https://github.com/sirjoe58/MAILALLEGATI/releases)
+[![Ultima versione](https://img.shields.io/github/v/release/sirjoe58/MAILALLEGATI?label=versione)](https://github.com/sirjoe58/MAILALLEGATI/releases/latest)
+[![Stelle](https://img.shields.io/github/stars/sirjoe58/MAILALLEGATI?style=flat&label=stelle)](https://github.com/sirjoe58/MAILALLEGATI/stargazers)
+[![Licenza MIT](https://img.shields.io/github/license/sirjoe58/MAILALLEGATI?label=licenza)](LICENSE)
+![Windows | Android](https://img.shields.io/badge/piattaforme-Windows%20%7C%20Android-informational)
+
+**Stanco di scaricare a mano bollette, fatture e documenti dalle email?**
+MailAllegati controlla la tua casella di posta e **salva da solo gli allegati** dei mittenti che scegli: in una o più cartelle del PC o del telefono e, se vuoi, anche sul **NAS di casa** (FRITZ!Box, Synology, QNAP o qualsiasi cartella di rete Windows/SMB).
+
+✅ Gratuito e open source · ✅ In italiano · ✅ Windows e Android · ✅ Funziona con Libero, Aruba, Tiscali, Gmail, Outlook e ogni casella IMAP
+
+👉 **[Scarica l'ultima versione](https://github.com/sirjoe58/MAILALLEGATI/releases/latest)** · ⭐ Se ti è utile, lascia una **stella** in alto a destra: aiuta altri a trovarlo!
+
+### A chi serve
+- **Famiglie:** tutte le bollette di luce, gas, acqua e telefono archiviate in automatico, con nomi chiari.
+- **Professionisti e piccoli uffici:** fatture e documenti dei fornitori salvati in cartelle condivise.
+- **Chi ha un NAS o un FRITZ!Box con disco USB:** un archivio centrale dei documenti, senza fare nulla.
 
 ## Funzioni principali
 - Controlla la casella email (IMAP) a intervalli regolari, anche in background.
@@ -27,6 +42,8 @@ Vai su **[Releases](../../releases/latest)** e scarica:
 | Aruba | imaps.aruba.it | 993 |
 | Libero | imapmail.libero.it | 993 |
 | Tiscali | imap.tiscali.it | 993 |
+| Gmail | imap.gmail.com (serve una «password per le app») | 993 |
+| Outlook / Hotmail | outlook.office365.com | 993 |
 | Altri | vedi le impostazioni IMAP del tuo provider | 993 |
 
 Utente = indirizzo email completo, password = quella dell'email.
@@ -89,6 +106,9 @@ Il progetto si compila automaticamente con GitHub Actions (`.github/workflows/bu
 - `android/` – Kotlin, apribile con Android Studio.
 - Firma Android: impostare i Secrets `ANDROID_KEYSTORE_B64` e `ANDROID_KEYSTORE_PASSWORD` (alias `mailallegati`); senza, l'apk viene firmato con una chiave di prova.
 - Nuova release: aumenta `APP_VERSION` in `windows/mail_core.py`, poi in **Actions › Compila MailAllegati › Run workflow** spunta *Pubblica una nuova release* (oppure scrivi `[release]` nel messaggio del commit).
+
+## Segnalazioni e suggerimenti
+Hai trovato un problema o hai un'idea? Apri una segnalazione nella scheda **[Issues](https://github.com/sirjoe58/MAILALLEGATI/issues)**.
 
 ## Licenza
 [MIT](LICENSE) – libero uso, modifica e ridistribuzione, mantenendo l'avviso di copyright. Il software è fornito «così com'è», senza garanzie (vedi anche `LEGGIMI_AVVERTENZE.txt`).
