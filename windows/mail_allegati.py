@@ -96,6 +96,51 @@ def show_disclaimer(parent=None, require_accept=True):
     return result["ok"]
 
 
+class TrayIcon:
+    """Icona accanto all'orologio di Windows (area di notifica), con menu e notifiche."""
+
+    def __init__(self, app):
+        self.app = app
+        self.icon = None
+        self.ok = False
+        try:
+            import pystray
+            from PIL import Image, ImageDraw
+        except Exception:
+            return
+        img = Image.new("RGBA", (64, 64), (0, 0, 0, 0))
+        d = ImageDraw.Draw(img)
+        d.rounded_rectangle((2, 2, 62, 62), radius=12, fill=(31, 111, 139, 255))
+        d.rectangle((12, 20, 52, 46), outline=(255, 255, 255, 255), width=4)
+        d.line((12, 20, 32, 36, 52, 20), fill=(255, 255, 255, 255), width=4)
+        menu = pystray.Menu(
+            pystray.MenuItem("Apri MailAllegati", lambda *a: app.after(0, app.show_window), default=True),
+            pystray.MenuItem("Controlla ora", lambda *a: app.after(0, app.check_now)),
+            pystray.Menu.SEPARATOR,
+            pystray.MenuItem("Esci", lambda *a: app.after(0, app.quit_app)),
+        )
+        try:
+            self.icon = pystray.Icon("MailAllegati", img, "MailAllegati", menu)
+            threading.Thread(target=self.icon.run, daemon=True).start()
+            self.ok = True
+        except Exception:
+            self.icon = None
+
+    def notify(self, title, message):
+        if self.ok and self.icon:
+            try:
+                self.icon.notify(message, title)
+            except Exception:
+                pass
+
+    def stop(self):
+        if self.icon:
+            try:
+                self.icon.stop()
+            except Exception:
+                pass
+
+
 class App(tk.Tk):
     def __init__(self, auto=False):
         super().__init__()
@@ -115,11 +160,14 @@ class App(tk.Tk):
         threading.Thread(target=self._nas_retry_loop, daemon=True).start()
         self.after(500, self._update_queue_label)
         self.protocol("WM_DELETE_WINDOW", self._on_close)
+        self.tray = TrayIcon(self) if self.cfg.get("tray_icon", True) else None
+        self._hint_shown = False
+        self.bind("<Unmap>", self._on_unmap)
 
         if auto or self.cfg.get("auto_start_monitor"):
             self.after(800, self.start_monitor)
         if auto:
-            self.after(1200, self.iconify)
+            self.after(1200, self.hide_window if self._tray_ok() else self.iconify)
 
     # ------------------------------------------------------------ UI
     def _build(self):
@@ -153,6 +201,14 @@ class App(tk.Tk):
             row=len(rows) + 2, column=0, sticky="nw", **PAD)
         self.t_senders = tk.Text(f1, height=8, width=45)
         self.t_senders.grid(row=len(rows) + 2, column=1, sticky="nsew", **PAD)
+        self.v_keywords = tk.StringVar()
+        ttk.Label(f1, text="Solo se l'oggetto contiene\n(vuoto = tutte le email)").grid(
+            row=len(rows) + 3, column=0, sticky="nw", **PAD)
+        kf = ttk.Frame(f1)
+        kf.grid(row=len(rows) + 3, column=1, sticky="we", **PAD)
+        ttk.Entry(kf, textvariable=self.v_keywords).pack(fill="x")
+        ttk.Label(kf, foreground="gray",
+                  text="Parole separate da virgola, es: fattura, bolletta (maiuscole/minuscole non contano)").pack(anchor="w")
         f1.columnconfigure(1, weight=1)
         f1.rowconfigure(len(rows) + 2, weight=1)
 
@@ -188,6 +244,30 @@ class App(tk.Tk):
                           ("Segna come lette le email elaborate", self.v_markread),
                           ("Al primo avvio elabora anche le email già presenti", self.v_existing)]:
             ttk.Checkbutton(opt, text=text, variable=var).pack(anchor="w", **PAD)
+
+        self.v_dupes = tk.BooleanVar()
+        ttk.Checkbutton(opt, text="Non salvare i doppioni (file identici già salvati in precedenza)",
+                        variable=self.v_dupes).pack(anchor="w", **PAD)
+
+        rn = ttk.LabelFrame(f2, text="Nome dei file salvati")
+        rn.pack(fill="x", **PAD)
+        self.v_rename = tk.BooleanVar()
+        self.v_template = tk.StringVar()
+        ttk.Checkbutton(rn, text="Rinomina i file con data e mittente", variable=self.v_rename,
+                        command=self._update_preview).pack(anchor="w", **PAD)
+        rr = ttk.Frame(rn)
+        rr.pack(fill="x", **PAD)
+        ttk.Label(rr, text="Modello:").pack(side="left")
+        e = ttk.Entry(rr, textvariable=self.v_template, width=40)
+        e.pack(side="left", padx=6)
+        ttk.Button(rr, text="Predefinito", command=lambda: (self.v_template.set("{data}_{mittente}_{nome}"),
+                                                            self._update_preview())).pack(side="left")
+        self.v_template.trace_add("write", lambda *a: self._update_preview())
+        ttk.Label(rn, foreground="gray",
+                  text="{data} = data dell'email   {mittente} = nome del mittente   "
+                       "{nome} = nome originale   {oggetto} = oggetto dell'email").pack(anchor="w", **PAD)
+        self.v_preview = tk.StringVar()
+        ttk.Label(rn, textvariable=self.v_preview).pack(anchor="w", **PAD)
 
         # --- NAS
         f3 = ttk.Frame(nb)
@@ -244,6 +324,12 @@ class App(tk.Tk):
                         variable=self.v_autostartmon).pack(anchor="w", **PAD)
         ttk.Checkbutton(f4, text="Avvia automaticamente con Windows (ridotto a icona)",
                         variable=self.v_winstart, command=self._toggle_startup).pack(anchor="w", **PAD)
+        self.v_tray = tk.BooleanVar()
+        self.v_notify = tk.BooleanVar()
+        ttk.Checkbutton(f4, text="Icona accanto all'orologio: chiudendo la finestra il programma continua a lavorare lì",
+                        variable=self.v_tray).pack(anchor="w", **PAD)
+        ttk.Checkbutton(f4, text="Mostra una notifica di Windows quando salvo degli allegati",
+                        variable=self.v_notify).pack(anchor="w", **PAD)
         ttk.Button(f4, text="Ricomincia da capo (dimentica le email già viste)",
                    command=self.reset_state).pack(anchor="w", **PAD)
         ttk.Label(f4, foreground="gray",
@@ -292,6 +378,13 @@ class App(tk.Tk):
         self.v_subdate.set(c["subfolder_per_date"])
         self.v_markread.set(c["mark_as_read"])
         self.v_existing.set(c["process_existing"])
+        self.v_keywords.set(c.get("subject_keywords", ""))
+        self.v_rename.set(c.get("rename_enabled", True))
+        self.v_template.set(c.get("rename_template", "{data}_{mittente}_{nome}"))
+        self.v_dupes.set(c.get("skip_duplicates", True))
+        self.v_tray.set(c.get("tray_icon", True))
+        self.v_notify.set(c.get("notify_saved", True))
+        self._update_preview()
         self.v_nas.set(c["nas_enabled"])
         self.v_naspath.set(c["nas_path"])
         self.v_nasuser.set(c["nas_user"])
@@ -319,6 +412,12 @@ class App(tk.Tk):
         c["subfolder_per_date"] = self.v_subdate.get()
         c["mark_as_read"] = self.v_markread.get()
         c["process_existing"] = self.v_existing.get()
+        c["subject_keywords"] = self.v_keywords.get().strip()
+        c["rename_enabled"] = self.v_rename.get()
+        c["rename_template"] = self.v_template.get().strip() or "{data}_{mittente}_{nome}"
+        c["skip_duplicates"] = self.v_dupes.get()
+        c["tray_icon"] = self.v_tray.get()
+        c["notify_saved"] = self.v_notify.get()
         c["nas_enabled"] = self.v_nas.get()
         c["nas_path"] = self.v_naspath.get().strip()
         c["nas_user"] = self.v_nasuser.get().strip()
@@ -406,9 +505,13 @@ class App(tk.Tk):
         if not self.check_lock.acquire(blocking=False):
             return
         try:
+            names = []
             n = core.check_mail(self.cfg, core.get_secret("imap_password"),
-                                core.get_secret("nas_password"), log=self.log)
+                                core.get_secret("nas_password"), log=self.log, on_saved=names.append)
             self.log(f"Controllo completato: {n} allegati salvati" if n else "Controllo completato: nessun nuovo allegato")
+            if names and self.cfg.get("notify_saved", True) and self.tray:
+                testo = "\n".join(names[:4]) + (f"\n… e altri {len(names) - 4}" if len(names) > 4 else "")
+                self.tray.notify(f"Salvati {len(names)} allegati" if len(names) > 1 else "Salvato 1 allegato", testo)
         except Exception as e:
             self.log(f"ERRORE: {e}")
         finally:
@@ -560,14 +663,55 @@ class App(tk.Tk):
             pass
         self.after(300, self._drain_log)
 
+    def _tray_ok(self):
+        return bool(self.tray and self.tray.ok)
+
+    def _update_preview(self):
+        try:
+            if self.v_rename.get():
+                ex = core.build_filename(self.v_template.get(), "FT_000123.pdf",
+                                         time.strftime("%Y-%m-%d"), "Enel", "Bolletta ottobre")
+                self.v_preview.set(f"Esempio: FT_000123.pdf  →  {ex}")
+            else:
+                self.v_preview.set("I file mantengono il nome originale")
+        except Exception:
+            pass
+
+    def hide_window(self):
+        self.withdraw()
+        if self._tray_ok() and not self._hint_shown:
+            self._hint_shown = True
+            self.tray.notify("MailAllegati è attivo",
+                             "Continua a lavorare qui, accanto all'orologio. Doppio clic sull'icona per aprirlo.")
+
+    def show_window(self):
+        self.deiconify()
+        self.state("normal")
+        self.lift()
+        self.focus_force()
+
+    def _on_unmap(self, event):
+        # ridotto a icona: con l'icona attiva sparisce dalla barra e resta accanto all'orologio
+        if event.widget is self and self._tray_ok() and self.state() == "iconic":
+            self.after(10, self.hide_window)
+
+    def quit_app(self):
+        self.save(quiet=True)
+        self.stop_event.set()
+        if self.tray:
+            self.tray.stop()
+        self.destroy()
+
     def _on_close(self):
+        if self._tray_ok():
+            self.save(quiet=True)
+            self.hide_window()
+            return
         if self.worker and self.worker.is_alive():
             if not messagebox.askyesno("Esci", "Il monitoraggio è attivo: chiudendo si ferma.\n"
                                                "Vuoi davvero uscire? (Puoi anche ridurre a icona)"):
                 return
-        self.save(quiet=True)
-        self.stop_event.set()
-        self.destroy()
+        self.quit_app()
 
 
 if __name__ == "__main__":

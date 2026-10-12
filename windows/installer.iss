@@ -2,7 +2,7 @@
 ; L'installazione non prosegue se non si accettano le avvertenze (pagina "Contratto di licenza").
 
 #define AppName "MailAllegati"
-#define AppVersion "1.2"
+#define AppVersion "1.3"
 
 [Setup]
 AppId={{6E3C8A41-2B7D-4F0A-9C55-3D1E8B7A2F10}

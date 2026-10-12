@@ -78,6 +78,70 @@ object Util {
     }
 
     fun monthFolder(): String = SimpleDateFormat("yyyy-MM", Locale.ITALY).format(Date())
+
+    fun dayString(d: Date?): String = SimpleDateFormat("yyyy-MM-dd", Locale.ITALY).format(d ?: Date())
+
+    /** Nome breve del mittente: nome visualizzato (es. "Enel Energia") oppure il dominio (es. "Enel"). */
+    fun senderLabel(personal: String?, address: String): String {
+        var n = (personal ?: "").trim().trim('"', '\'').trim()
+        if (n.isEmpty() || n.contains("@")) {
+            val parts = address.substringAfter("@").lowercase().split('.').filter { it.isNotEmpty() }
+            n = when {
+                parts.size >= 3 && parts[parts.size - 2] in setOf("co", "com", "gov", "ac") -> parts[parts.size - 3]
+                parts.size >= 2 -> parts[parts.size - 2]
+                parts.isNotEmpty() -> parts[0]
+                else -> "mittente"
+            }.replaceFirstChar { it.uppercase() }
+        }
+        n = n.replace(Regex("\\s+"), "_")
+        return safeName(n).take(30).trim('_').ifEmpty { "mittente" }
+    }
+
+    /** Applica il modello {data} {mittente} {nome} {oggetto}; l'estensione originale resta. */
+    fun buildFilename(template: String, original: String, data: String, mittente: String, oggetto: String): String {
+        val ext = extOf(original)
+        val base = if (ext.isNotEmpty()) original.dropLast(ext.length + 1) else original
+        val t = template.ifBlank { "{data}_{mittente}_{nome}" }
+        var out = t.replace("{data}", data).replace("{mittente}", mittente).replace("{nome}", base)
+            .replace("{oggetto}", oggetto.trim().replace(Regex("\\s+"), "_").take(40))
+        out = safeName(out).replace(Regex("_{2,}"), "_").trim('_', ' ', '.')
+        if (out.isEmpty()) out = base.ifEmpty { "allegato" }
+        return if (ext.isNotEmpty() && !out.lowercase().endsWith(".$ext")) "$out.$ext" else out
+    }
+
+    fun subjectMatches(subject: String, keywords: String): Boolean {
+        val kws = parseList(keywords).map { it.lowercase() }
+        if (kws.isEmpty()) return true
+        val s = subject.lowercase()
+        return kws.any { s.contains(it) }
+    }
+
+    fun sha256(data: ByteArray): String =
+        java.security.MessageDigest.getInstance("SHA-256").digest(data).joinToString("") { "%02x".format(it) }
+}
+
+/** Impronte dei file gia' salvati, per non salvare i doppioni. */
+class HashStore(context: Context) {
+    private val file = File(context.filesDir, "impronte.txt")
+    private val list: MutableList<String> = try {
+        if (file.exists()) file.readLines().filter { it.isNotBlank() }.toMutableList() else mutableListOf()
+    } catch (_: Exception) { mutableListOf() }
+    private val set = list.toHashSet()
+
+    fun contains(h: String) = h in set
+
+    fun add(h: String) {
+        if (set.add(h)) {
+            list.add(h)
+            while (list.size > 5000) set.remove(list.removeAt(0))
+        }
+    }
+
+    fun save() {
+        try { file.writeText(list.joinToString("\n")) } catch (_: Exception) {}
+    }
+
+    fun clear() { file.delete() }
 }
 
 /** Registro attivita' salvato su file, mostrato nell'app. */

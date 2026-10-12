@@ -49,6 +49,13 @@ Aggiungi una o più cartelle: ogni allegato viene salvato in **tutte**.
 Opzioni: solo certi tipi di file (es. `pdf, xml`), sottocartella per mittente, sottocartella per mese, segna come lette.
 Se un file con lo stesso nome esiste già, viene salvato come `nome (1).pdf`.
 
+### Novità della versione 1.3
+- **Nomi chiari:** i file vengono rinominati con data e mittente, es. `FT_000123.pdf` → `2026-10-12_Enel_FT_000123.pdf`. Il modello si cambia in *Cartelle di destinazione* (`{data}`, `{mittente}`, `{nome}`, `{oggetto}`).
+- **Filtro sull'oggetto:** in *Email e mittenti* puoi indicare parole come `fattura, bolletta`: vengono salvati solo gli allegati delle email il cui oggetto ne contiene almeno una.
+- **Niente doppioni:** un file identico a uno già salvato non viene salvato di nuovo.
+- **Windows – icona accanto all'orologio:** chiudendo la finestra il programma continua a lavorare; doppio clic sull'icona per riaprirlo, tasto destro per *Controlla ora* o *Esci*.
+- **Notifiche:** quando vengono salvati allegati compare una notifica con i nomi dei file (Windows e Android).
+
 ### NAS
 - Indirizzo: `\\192.168.1.10\condivisa\allegati` (si accetta anche `smb://192.168.1.10/condivisa/allegati`)
 - Utente e password dell'utente NAS (vuoto = accesso ospite)

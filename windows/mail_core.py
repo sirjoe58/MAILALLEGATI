@@ -16,7 +16,7 @@ from email.header import decode_header, make_header
 from email.utils import getaddresses
 
 APP_NAME = "MailAllegati"
-APP_VERSION = "1.2"
+APP_VERSION = "1.3"
 APP_DIR = os.path.join(os.environ.get("APPDATA") or os.path.expanduser("~"), APP_NAME)
 CONFIG_FILE = os.path.join(APP_DIR, "config.json")
 STATE_FILE = os.path.join(APP_DIR, "stato.json")
@@ -43,6 +43,13 @@ DEFAULT_CONFIG = {
     "nas_retry_minutes": 2,     # ogni quanto riprovare l'invio dei file in coda
     "interval_minutes": 5,
     "auto_start_monitor": False,
+    # novita' 1.3
+    "subject_keywords": "",     # salva solo se l'oggetto contiene una di queste parole (vuoto = tutte)
+    "rename_enabled": True,     # rinomina i file con data e mittente
+    "rename_template": "{data}_{mittente}_{nome}",
+    "skip_duplicates": True,    # non salvare di nuovo un file identico gia' salvato
+    "tray_icon": True,          # icona accanto all'orologio di Windows
+    "notify_saved": True,       # notifica di Windows quando salva un allegato
 }
 
 # ---------------------------------------------------------------- password
@@ -205,6 +212,69 @@ def extract_attachments(msg, cfg):
             continue
         result.append((filename, payload))
     return result
+
+
+# ---------------------------------------------------------------- nomi file, filtri, doppioni
+
+def sender_label(from_header, addr):
+    """Nome breve del mittente: il nome visualizzato (es. 'Enel Energia') oppure il dominio (es. 'Enel')."""
+    from email.utils import parseaddr
+    name, _ = parseaddr(decode_str(from_header))
+    name = (name or "").strip().strip('"').strip("'").strip()
+    if not name or "@" in name:
+        domain = (addr or "").split("@")[-1].lower()
+        parts = [x for x in domain.split(".") if x]
+        if len(parts) >= 3 and parts[-2] in ("co", "com", "gov", "ac"):
+            name = parts[-3]
+        elif len(parts) >= 2:
+            name = parts[-2]
+        else:
+            name = parts[0] if parts else "mittente"
+        name = name.capitalize()
+    name = re.sub(r"\s+", "_", name)
+    return safe_filename(name)[:30].strip("_") or "mittente"
+
+
+def email_date(date_header):
+    from email.utils import parsedate_to_datetime
+    try:
+        d = parsedate_to_datetime(decode_str(date_header))
+        if d is not None:
+            return d.strftime("%Y-%m-%d")
+    except Exception:
+        pass
+    return time.strftime("%Y-%m-%d")
+
+
+def build_filename(template, original, data, mittente, oggetto=""):
+    """Applica il modello: {data} {mittente} {nome} {oggetto}. L'estensione originale resta."""
+    base, ext = os.path.splitext(original)
+    template = (template or "").strip() or "{data}_{mittente}_{nome}"
+    out = (template.replace("{data}", data).replace("{mittente}", mittente)
+           .replace("{nome}", base).replace("{oggetto}", re.sub(r"\s+", "_", oggetto.strip())[:40]))
+    out = safe_filename(out)
+    out = re.sub(r"_{2,}", "_", out).strip("_ .")
+    if not out:
+        out = base or "allegato"
+    if ext and out.lower().endswith(ext.lower()):
+        return out
+    return out + ext
+
+
+def subject_matches(subject, keywords):
+    kws = [k.lower() for k in parse_list(keywords)]
+    if not kws:
+        return True
+    s = (subject or "").lower()
+    return any(k in s for k in kws)
+
+
+HASH_LIMIT = 5000
+
+
+def file_hash(data):
+    import hashlib
+    return hashlib.sha256(data).hexdigest()
 
 
 # ---------------------------------------------------------------- NAS (SMB)
@@ -480,7 +550,7 @@ def test_imap(cfg, password):
             pass
 
 
-def check_mail(cfg, imap_password, nas_password="", log=print, nas_factory=None):
+def check_mail(cfg, imap_password, nas_password="", log=print, nas_factory=None, on_saved=None):
     """Esegue un controllo. Restituisce il numero di allegati salvati."""
     if not disclaimer_accepted():
         raise RuntimeError("Le avvertenze d'uso non sono state accettate")
@@ -494,6 +564,8 @@ def check_mail(cfg, imap_password, nas_password="", log=print, nas_factory=None)
         raise RuntimeError("Scegli almeno una cartella di destinazione o attiva il NAS")
 
     state = _load_json(STATE_FILE, {})
+    hashes = state.get("_hashes", [])
+    hash_set = set(hashes)
     key = f"{cfg['imap_user'].lower()}@{cfg['imap_server'].lower()}/{cfg.get('imap_folder') or 'INBOX'}"
     st = state.get(key, {})
 
@@ -544,8 +616,11 @@ def check_mail(cfg, imap_password, nas_password="", log=print, nas_factory=None)
                 continue
             h = email.message_from_bytes(hdr[0][1], policy=email.policy.compat32)
             ok, addr = sender_matches(h.get("From", ""), senders)
+            subject = decode_str(h.get("Subject", ""))
+            if ok and not subject_matches(subject, cfg.get("subject_keywords", "")):
+                log(f"Email da {addr} \"{subject}\": l'oggetto non contiene le parole scelte, ignorata")
+                ok = False
             if ok:
-                subject = decode_str(h.get("Subject", ""))
                 fetch_cmd = "(RFC822)" if cfg.get("mark_as_read") else "(BODY.PEEK[])"
                 typ, full = conn.uid("FETCH", str(uid), fetch_cmd)
                 raw = None
@@ -565,7 +640,15 @@ def check_mail(cfg, imap_password, nas_password="", log=print, nas_factory=None)
                         if cfg.get("subfolder_per_date"):
                             rel.append(time.strftime("%Y-%m"))
                         rel_dir = os.path.join(*rel) if rel else ""
+                        mittente = sender_label(h.get("From", ""), addr)
+                        data_mail = email_date(h.get("Date", ""))
                         for name, payload in atts:
+                            hsh = file_hash(payload)
+                            if cfg.get("skip_duplicates", True) and hsh in hash_set:
+                                log(f"Doppione gia' salvato in precedenza, saltato: {name}")
+                                continue
+                            if cfg.get("rename_enabled", True):
+                                name = build_filename(cfg.get("rename_template"), name, data_mail, mittente, subject)
                             for folder in folders:
                                 dest = os.path.join(folder, rel_dir) if rel_dir else folder
                                 os.makedirs(dest, exist_ok=True)
@@ -590,6 +673,17 @@ def check_mail(cfg, imap_password, nas_password="", log=print, nas_factory=None)
                                     queue_add(nas_rel, name, payload)
                                     log(f"In coda per il NAS: {name}")
                             saved += 1
+                            if hsh not in hash_set:
+                                hash_set.add(hsh)
+                                hashes.append(hsh)
+                                if len(hashes) > HASH_LIMIT:
+                                    hash_set.discard(hashes.pop(0))
+                                state["_hashes"] = hashes
+                            if on_saved:
+                                try:
+                                    on_saved(name)
+                                except Exception:
+                                    pass
             st["last_uid"] = uid
             state[key] = st
             _save_json(STATE_FILE, state)

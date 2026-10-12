@@ -86,6 +86,16 @@
                 android:minLines="4"
                 android:gravity="top" />
         </com.google.android.material.textfield.TextInputLayout>
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Field"
+            android:hint="Solo se l\'oggetto contiene (es. fattura, bolletta)">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/subjectKeywords"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text" />
+        </com.google.android.material.textfield.TextInputLayout>
+        <TextView style="@style/Note" android:text="Vuoto = tutte le email dei mittenti scelti. Più parole separate da virgola." />
         <TextView style="@style/Section" android:text="3 · Cartelle di destinazione" />
         <TextView style="@style/Note" android:text="Gli allegati vengono salvati in tutte le cartelle dell\'elenco." />
         <LinearLayout
@@ -132,6 +142,26 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Al primo avvio elabora anche le email già presenti" />
+        <com.google.android.material.checkbox.MaterialCheckBox
+            android:id="@+id/skipDuplicates"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Non salvare i doppioni (file identici già salvati)" />
+        <com.google.android.material.checkbox.MaterialCheckBox
+            android:id="@+id/renameEnabled"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Rinomina i file con data e mittente" />
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Field"
+            android:hint="Modello del nome">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/renameTemplate"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text" />
+        </com.google.android.material.textfield.TextInputLayout>
+        <TextView style="@style/Note" android:text="{data} = data dell\'email · {mittente} = nome del mittente · {nome} = nome originale · {oggetto} = oggetto. Esempio: 2026-10-12_Enel_FT_000123.pdf" />
         <TextView style="@style/Section" android:text="4 · NAS (facoltativo)" />
         <com.google.android.material.checkbox.MaterialCheckBox
             android:id="@+id/nasEnabled"

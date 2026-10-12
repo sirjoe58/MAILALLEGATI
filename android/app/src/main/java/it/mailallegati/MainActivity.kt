@@ -87,7 +87,7 @@ class MainActivity : AppCompatActivity() {
             MaterialAlertDialogBuilder(this)
                 .setTitle("Ricomincia da capo")
                 .setMessage("L'app dimenticherà quali email ha già visto. Al prossimo controllo si comporterà come al primo avvio.")
-                .setPositiveButton("Sì") { _, _ -> s.resetState(); appLog.add("Stato azzerato"); refreshLog() }
+                .setPositiveButton("Sì") { _, _ -> s.resetState(); HashStore(this).clear(); appLog.add("Stato azzerato"); refreshLog() }
                 .setNegativeButton("Annulla", null)
                 .show()
         }
@@ -181,6 +181,10 @@ class MainActivity : AppCompatActivity() {
         cb(R.id.subMonth).isChecked = s.subPerMonth
         cb(R.id.markRead).isChecked = s.markRead
         cb(R.id.processExisting).isChecked = s.processExisting
+        et(R.id.subjectKeywords).setText(s.subjectKeywords)
+        cb(R.id.skipDuplicates).isChecked = s.skipDuplicates
+        cb(R.id.renameEnabled).isChecked = s.renameEnabled
+        et(R.id.renameTemplate).setText(s.renameTemplate)
         cb(R.id.nasEnabled).isChecked = s.nasEnabled
         et(R.id.nasPath).setText(s.nasPath)
         et(R.id.nasUser).setText(s.nasUser)
@@ -208,6 +212,10 @@ class MainActivity : AppCompatActivity() {
         s.subPerMonth = cb(R.id.subMonth).isChecked
         s.markRead = cb(R.id.markRead).isChecked
         s.processExisting = cb(R.id.processExisting).isChecked
+        s.subjectKeywords = et(R.id.subjectKeywords).text.toString()
+        s.skipDuplicates = cb(R.id.skipDuplicates).isChecked
+        s.renameEnabled = cb(R.id.renameEnabled).isChecked
+        s.renameTemplate = et(R.id.renameTemplate).text.toString()
         s.nasEnabled = cb(R.id.nasEnabled).isChecked
         s.nasPath = et(R.id.nasPath).text.toString()
         s.nasUser = et(R.id.nasUser).text.toString()
