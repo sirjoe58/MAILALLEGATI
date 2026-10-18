@@ -1,3 +1,10 @@
 *.keystore
 *.jks
 __pycache__/
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+windows/build/
+windows/dist/
+*.spec
