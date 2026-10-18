@@ -2,4 +2,6 @@ smbprotocol>=1.13
 keyring>=24
 pystray>=0.19
 pillow>=10
+pypdf>=4
+openpyxl>=3.1
 pyinstaller>=6.6

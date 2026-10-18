@@ -115,6 +115,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         btn(R.id.btnDisclaimer).setOnClickListener { showDisclaimer(required = false) }
+        checkForUpdate()
         btn(R.id.btnQueueSend).setOnClickListener {
             saveSettings(quiet = true)
             when {
@@ -192,6 +193,7 @@ class MainActivity : AppCompatActivity() {
         et(R.id.nasDomain).setText(s.nasDomain)
         et(R.id.interval).setText(s.intervalMinutes.toString())
         cb(R.id.notify).isChecked = s.notify
+        cb(R.id.checkUpdates).isChecked = s.checkUpdates
         findViewById<MaterialSwitch>(R.id.monitor).isChecked = s.monitorOn
     }
 
@@ -224,6 +226,7 @@ class MainActivity : AppCompatActivity() {
         val iv = maxOf(15, et(R.id.interval).text.toString().toIntOrNull() ?: 15)
         s.intervalMinutes = iv
         s.notify = cb(R.id.notify).isChecked
+        s.checkUpdates = cb(R.id.checkUpdates).isChecked
         if (s.monitorOn && iv != oldInterval) CheckWorker.schedule(this, iv)
         if (!quiet) {
             et(R.id.interval).setText(iv.toString())
@@ -392,6 +395,36 @@ class MainActivity : AppCompatActivity() {
         }
         scroll.setOnScrollChangeListener { _, _, _, _, _ -> unlockIfAtEnd() }
         scroll.post { unlockIfAtEnd() }
+    }
+
+    /** Controlla una volta al giorno se su GitHub c'e' una versione piu' recente. */
+    private fun checkForUpdate() {
+        if (!s.checkUpdates || System.currentTimeMillis() - s.lastUpdateCheck < 24L * 3600 * 1000) return
+        lifecycleScope.launch {
+            val found = withContext(Dispatchers.IO) {
+                try {
+                    val c = java.net.URL("https://api.github.com/repos/sirjoe58/MAILALLEGATI/releases/latest")
+                        .openConnection() as java.net.HttpURLConnection
+                    c.connectTimeout = 10000; c.readTimeout = 10000
+                    c.setRequestProperty("Accept", "application/vnd.github+json")
+                    val body = c.inputStream.bufferedReader().use { it.readText() }
+                    val j = org.json.JSONObject(body)
+                    val tag = j.optString("tag_name").trimStart('v')
+                    val local = packageManager.getPackageInfo(packageName, 0).versionName ?: "0"
+                    s.lastUpdateCheck = System.currentTimeMillis()
+                    if (tag.isNotEmpty() && Util.isNewer(tag, local)) tag to j.optString("html_url") else null
+                } catch (_: Exception) { null }
+            } ?: return@launch
+            MaterialAlertDialogBuilder(this@MainActivity)
+                .setTitle("Nuova versione disponibile")
+                .setMessage("È disponibile MailAllegati ${found.first}. Vuoi scaricarla?")
+                .setPositiveButton("Scarica") { _, _ ->
+                    startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(found.second.ifBlank {
+                        "https://github.com/sirjoe58/MAILALLEGATI/releases/latest" })))
+                }
+                .setNegativeButton("Più tardi", null)
+                .show()
+        }
     }
 
     private fun refreshLog() {

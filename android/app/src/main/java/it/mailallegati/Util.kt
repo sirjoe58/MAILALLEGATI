@@ -14,17 +14,46 @@ object Util {
         text.split('\n', ',', ';', ' ').map { it.trim().trimStart('.').lowercase() }.filter { it.isNotEmpty() }
 
     /** Restituisce true se l'indirizzo corrisponde a uno dei mittenti scelti. */
-    fun senderMatches(address: String, senders: List<String>): Boolean {
+    /** "@enel.it = Bollette\\Luce" -> ("@enel.it", "Bollette\\Luce"); senza "=" la cartella e' vuota. */
+    fun splitRule(line: String): Pair<String, String> {
+        val i = line.indexOf('=')
+        return if (i >= 0) line.substring(0, i).trim() to line.substring(i + 1).trim() else line.trim() to ""
+    }
+
+    private fun patternMatches(a: String, raw: String): Boolean {
+        val s = raw.lowercase().trim()
+        if (s.isEmpty()) return false
+        return when {
+            s.startsWith("@") -> a.endsWith(s)
+            s.contains("@") -> a == s
+            else -> a.contains(s)
+        }
+    }
+
+    /** Cartella della regola che corrisponde all'indirizzo ("" se senza cartella), null se nessuna regola. */
+    fun ruleFor(address: String, senders: List<String>): String? {
         val a = address.lowercase().trim()
         for (raw in senders) {
-            val s = raw.lowercase().trim()
-            if (s.isEmpty()) continue
-            when {
-                s.startsWith("@") -> if (a.endsWith(s)) return true
-                s.contains("@") -> if (a == s) return true
-                else -> if (a.contains(s)) return true
-            }
+            val (pat, folder) = splitRule(raw)
+            if (patternMatches(a, pat)) return folder
         }
+        return null
+    }
+
+    /** Restituisce true se l'indirizzo corrisponde a uno dei mittenti scelti. */
+    fun senderMatches(address: String, senders: List<String>): Boolean = ruleFor(address, senders) != null
+
+    /** Sottocartelle sicure della regola (niente "..", niente lettere di unita'). */
+    fun ruleParts(folder: String): List<String> =
+        folder.split('\\', '/').map { it.trim() }
+            .filter { it.isNotEmpty() && it != "." && it != ".." && !it.endsWith(":") }
+            .map { safeName(it) }
+
+    /** Confronto di versioni "1.4.0" > "1.3.1". */
+    fun isNewer(remote: String, local: String): Boolean {
+        fun parts(v: String) = Regex("\\d+").findAll(v).map { it.value.toInt() }.toList().let { it + List(maxOf(0, 3 - it.size)) { 0 } }
+        val r = parts(remote); val l = parts(local)
+        for (i in 0 until 3) { if (r[i] != l[i]) return r[i] > l[i] }
         return false
     }
 

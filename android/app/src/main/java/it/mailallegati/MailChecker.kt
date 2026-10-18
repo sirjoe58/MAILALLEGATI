@@ -140,7 +140,7 @@ class MailChecker(
                         if (atts.isEmpty()) {
                             log("Email da $match \"$subject\": nessun allegato")
                         } else {
-                            val sub = mutableListOf<String>()
+                            val sub = Util.ruleParts(Util.ruleFor(match, senders) ?: "").toMutableList()
                             if (s.subPerSender) sub += Util.safeName(match)
                             if (s.subPerMonth) sub += Util.monthFolder()
                             val mittente = Util.senderLabel(fromMatch?.personal, match)

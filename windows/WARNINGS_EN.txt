@@ -1,0 +1,83 @@
+﻿MAILALLEGATI – WARNINGS, INSTRUCTIONS FOR USE AND LIMITATION OF LIABILITY
+Version 2 – October 2026
+
+Please read carefully before installing or using the program.
+By installing, starting or using MailAllegati (Windows or Android version) you declare that you have read, understood and fully accepted the following. If you do not accept, do not install and do not use the program.
+
+
+1. WHAT THE PROGRAM DOES
+
+MailAllegati connects to a mailbox using the IMAP protocol with the credentials entered by the user, finds the emails coming from the senders chosen by the user, extracts their attachments and saves them in the folders chosen by the user and, if enabled, copies them to a network device (NAS) using the SMB protocol.
+The program does not send data to third parties: it only communicates with the configured mail servers and NAS and, if the update check is enabled, with GitHub to find out whether a new version exists.
+
+
+2. HOW TO USE IT
+
+a) Enter IMAP server, port, user and password of your mailbox and press "Test email connection". You can add more than one mailbox.
+b) Enter the senders to check, one per line: full address (e.g. invoices@company.com) or domain (e.g. @company.com). To send a sender to a dedicated folder add "= folder" (e.g. @company.com = Bills\Power).
+c) Choose one or more destination folders. Attachments are saved in all the folders listed.
+d) Optional: enable the NAS by entering path (e.g. \\192.168.1.10\share\attachments), user and password, and press "Test NAS connection".
+   If the NAS is off or unreachable, attachments are queued on the device and sent automatically as soon as the NAS is reachable again. The queue takes space on the device; on Android it is deleted if the app is uninstalled or its data is cleared. The "Send to NAS now" and "Empty queue" buttons let you manage it manually.
+e) Start monitoring. On Windows the check runs while the program is open (also minimized or started with Windows). On Android it runs in the background, at most every 15 minutes, according to the system power-saving rules.
+f) By default only emails arriving after activation are processed. The option "also process the emails already in the mailbox" retrieves the attachments of existing emails.
+g) Check the "Activity log" from time to time to make sure everything works correctly.
+
+
+3. WARNINGS
+
+- The program does NOT replace a backup system. Always keep the original emails and backup copies of your data.
+- Correct operation depends on external factors outside the author's control: mail servers, Internet connection, local network, NAS, operating system, updates, power-saving settings, antivirus and firewall. Some emails or attachments might not be detected, saved or uploaded, or might be handled with delay.
+- Attachments may contain viruses or malicious software. The program does NOT perform any antivirus check. Keep an up-to-date antivirus running and do not open files you are not sure about.
+- Make sure the destination folders and the NAS have enough free space. The program does not handle running out of space.
+- If you enable the "mark as read" option, the status of the emails in the mailbox is changed.
+- Credentials are stored on the device with the available protection systems (Windows Credential Manager; Android encrypted storage). Protect the device with a password or screen lock: anyone with access to the device could access the program and its settings.
+- The automatic reading of bill amounts and due dates ("Bills" feature) may be incomplete or wrong. It is only an aid: always check amounts and due dates on the original documents. The author is not liable for missed, late or wrong payments.
+- On Windows, on first start, the system may report the program as "unrecognized" because it is not digitally signed.
+
+
+4. PERMITTED USE AND PROHIBITION OF UNLAWFUL USE
+
+The program may be used only:
+- on mailboxes you own, or for which you have explicit authorization from the owner;
+- on NAS devices, folders and devices you own or are authorized to use.
+
+ANY unlawful use is PROHIBITED, including for example:
+- accessing other people's mailboxes, accounts, networks or devices without authorization;
+- intercepting, copying or keeping third-party correspondence or data without being entitled to do so;
+- processing personal data in breach of the EU Regulation 2016/679 (GDPR) and of privacy legislation;
+- violating the secrecy of correspondence, copyright or other third-party rights.
+
+If you use the program on behalf of a company or for third-party data, you are responsible for complying with data protection rules and with the obligations towards the data subjects. The author is in no way responsible for any unlawful or unauthorized use of the program: any civil, criminal or administrative consequence falls exclusively on whoever committed it.
+
+
+5. NO WARRANTY
+
+The program is provided "AS IS", without warranties of any kind, express or implied, including but not limited to warranties of operation, absence of errors, continuity of service, fitness for a particular purpose, compatibility with specific devices, servers or services.
+
+
+6. LIMITATION OF LIABILITY
+
+To the maximum extent permitted by the applicable law, the author and anyone who contributed to the creation or distribution of the program shall not be liable for any damage, direct or indirect, arising from the use of or the inability to use the program, including but not limited to:
+- loss, damage, deletion, overwriting or failed saving of files, emails or data;
+- missed or delayed detection of emails or attachments, and the resulting consequences (for example deadlines, payments, obligations);
+- malfunctions, crashes or damage to computers, phones, NAS, networks or other devices;
+- spread of viruses or malicious software contained in attachments;
+- unauthorized access due to credentials or devices not adequately protected;
+- economic damage, loss of profit, business interruption.
+
+Liabilities that cannot be excluded by law remain unaffected.
+
+
+7. USER RESPONSIBILITY
+
+Each user uses the program at their own risk and takes full and exclusive responsibility for:
+- the correctness of the settings entered;
+- the lawfulness of the use and of the data processed;
+- the security of their credentials and devices;
+- checking the saved files and making regular backup copies.
+
+
+8. ACCEPTANCE
+
+On first start the program shows this document and does not continue until it has been expressly accepted. If you do not accept, the program closes and must not be used. The document can be consulted at any time from the program ("Warnings" button).
+If a new version of the program changes these terms, a new acceptance will be required.

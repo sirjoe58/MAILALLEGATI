@@ -1,5 +1,5 @@
 MAILALLEGATI – AVVERTENZE, MODALITÀ D'USO E LIMITAZIONE DI RESPONSABILITÀ
-Versione 1 – ottobre 2026
+Versione 2 – ottobre 2026
 
 Leggere attentamente prima di installare o utilizzare il programma.
 Installando, avviando o usando MailAllegati (versione Windows o Android) dichiari di aver letto, compreso e accettato integralmente quanto segue. Se non accetti, non installare e non usare il programma.
@@ -31,6 +31,7 @@ g) Consultare periodicamente il "Registro attività" per verificare il corretto 
 - Verifica che le cartelle di destinazione e il NAS abbiano spazio sufficiente. Il programma non gestisce l'esaurimento dello spazio.
 - Se attivi l'opzione "segna come lette", lo stato delle email nella casella viene modificato.
 - Le credenziali sono conservate sul dispositivo con i sistemi di protezione disponibili (Gestione credenziali di Windows; archivio cifrato di Android). Proteggi il dispositivo con password o blocco schermo: chiunque abbia accesso al dispositivo potrebbe accedere al programma e alle sue impostazioni.
+- La lettura automatica di importi e scadenze delle bollette (funzione «Bollette») può essere incompleta o errata. È solo un aiuto: controlla sempre importi e scadenze sui documenti originali. L'autore non risponde di pagamenti mancati, ritardati o errati.
 - Su Windows, al primo avvio, il sistema potrebbe segnalare il programma come "non riconosciuto" perché non firmato digitalmente.
 
 

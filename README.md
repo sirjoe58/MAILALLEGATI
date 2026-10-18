@@ -6,10 +6,12 @@
 [![Licenza MIT](https://img.shields.io/github/license/sirjoe58/MAILALLEGATI?label=licenza)](LICENSE)
 ![Windows | Android](https://img.shields.io/badge/piattaforme-Windows%20%7C%20Android-informational)
 
+🇬🇧 *[English version below](#english)*
+
 **Stanco di scaricare a mano bollette, fatture e documenti dalle email?**
 MailAllegati controlla la tua casella di posta e **salva da solo gli allegati** dei mittenti che scegli: in una o più cartelle del PC o del telefono e, se vuoi, anche sul **NAS di casa** (FRITZ!Box, Synology, QNAP o qualsiasi cartella di rete Windows/SMB).
 
-✅ Gratuito e open source · ✅ In italiano · ✅ Windows e Android · ✅ Funziona con Libero, Aruba, Tiscali, Gmail, Outlook e ogni casella IMAP
+✅ Gratuito e open source · ✅ In italiano · ✅ Windows e Android · ✅ Funziona con Libero, Aruba, Tiscali, Gmail e le caselle IMAP con password (non con Outlook/Hotmail, che richiede il login Microsoft)
 
 👉 **[Scarica l'ultima versione](https://github.com/sirjoe58/MAILALLEGATI/releases/latest)** · ⭐ Se ti è utile, lascia una **stella** in alto a destra: aiuta altri a trovarlo!
 
@@ -19,11 +21,15 @@ MailAllegati controlla la tua casella di posta e **salva da solo gli allegati** 
 - **Chi ha un NAS o un FRITZ!Box con disco USB:** un archivio centrale dei documenti, senza fare nulla.
 
 ## Funzioni principali
-- Controlla la casella email (IMAP) a intervalli regolari, anche in background.
+- Controlla **una o più caselle email** (IMAP) a intervalli regolari, anche in background.
 - Filtra per **mittente** (indirizzo o dominio) e per **parole nell'oggetto** (es. `fattura, bolletta`).
 - Salva gli allegati in **più cartelle** e li **rinomina** con data e mittente: `2026-10-12_Enel_FT_000123.pdf`.
 - Copia sul **NAS**; se il NAS è spento li mette in **coda** e li invia appena torna raggiungibile.
 - **Niente doppioni**, **notifiche**, icona accanto all'orologio di Windows, avvio con Windows.
+- **Cartella dedicata per ogni mittente**: `@enel.it = Bollette\Luce`.
+- **Bollette (Windows):** legge **importo e scadenza** dai PDF, li raccoglie in un **foglio Excel** e ti avvisa prima della scadenza.
+- **Ultimi file salvati** con apertura immediata, **backup delle impostazioni**, **avviso di nuova versione**.
+- Interfaccia in **italiano e inglese** (Windows).
 - Password custodite nella Gestione credenziali di Windows / cifrate su Android.
 
 ## Download
@@ -43,7 +49,6 @@ Vai su **[Releases](../../releases/latest)** e scarica:
 | Libero | imapmail.libero.it | 993 |
 | Tiscali | imap.tiscali.it | 993 |
 | Gmail | imap.gmail.com (serve una «password per le app») | 993 |
-| Outlook / Hotmail | outlook.office365.com | 993 |
 | Altri | vedi le impostazioni IMAP del tuo provider | 993 |
 
 Utente = indirizzo email completo, password = quella dell'email.
@@ -52,6 +57,13 @@ Utente = indirizzo email completo, password = quella dell'email.
 Uno per riga:
 - `fatture@ditta.it` → solo quell'indirizzo
 - `@ditta.it` → tutti gli indirizzi di quel dominio
+- `@enel.it = Bollette\Luce` → gli allegati di quel mittente vanno nella sottocartella `Bollette\Luce` di ogni destinazione (anche sul NAS)
+
+### Più caselle (Windows)
+Nella scheda *Email e mittenti* scegli la casella dal menu **Casella** e premi **+ Aggiungi casella** per aggiungerne altre. Ognuna ha server, utente e password propri e si può disattivare temporaneamente; i mittenti valgono per tutte.
+
+### Bollette (Windows)
+Nella scheda **Bollette** attiva *Leggi importo e scadenza dalle bollette PDF salvate*. Per ogni PDF con testo leggibile il programma cerca l'importo («Totale da pagare», «Importo da pagare»…) e la scadenza («Scadenza», «Da pagare entro»…), aggiorna il foglio Excel (colonne Data email, Mittente, Importo, Scadenza, Stato, File, Percorso e totale da pagare) e mostra una notifica alcuni giorni prima della scadenza. Le bollette si segnano come *pagate* con un clic. **I dati letti automaticamente vanno sempre controllati sul documento originale.**
 
 ### Cartelle di destinazione
 Aggiungi una o più cartelle: ogni allegato viene salvato in **tutte**.
@@ -109,6 +121,16 @@ Il progetto si compila automaticamente con GitHub Actions (`.github/workflows/bu
 
 ## Segnalazioni e suggerimenti
 Hai trovato un problema o hai un'idea? Apri una segnalazione nella scheda **[Issues](https://github.com/sirjoe58/MAILALLEGATI/issues)**.
+
+## English
+
+**MailAllegati** checks your mailbox and **automatically saves the attachments** of the senders you choose, into one or more folders on your PC or phone and, optionally, on your **home NAS** (FRITZ!Box, Synology, QNAP or any Windows/SMB network share). Free and open source, for **Windows** and **Android**; the Windows version is available in **English** (*Automation › Language*).
+
+**Features:** multiple IMAP mailboxes · sender filter (`invoices@company.com`, `@company.com`) and subject keywords · a dedicated folder per sender (`@company.com = Bills\Power`) · automatic renaming (`2026-10-12_Company_INV001.pdf`) · NAS upload with an offline queue · no duplicates · notifications and tray icon · **Bills**: reads amount and due date from PDF bills into an Excel sheet with reminders (always double-check them on the original document) · recent files · settings backup · new-version notice.
+
+**Download:** get `MailAllegati-Setup.exe` (Windows) or `MailAllegati-Android.apk` from **[Releases](../../releases/latest)**. Windows may show "Windows protected your PC" because the program is not signed: *More info › Run anyway*. On first start the program shows the warnings and terms of use (`WARNINGS_EN.txt`) and continues only if you accept them.
+
+**Mail servers:** works with IMAP mailboxes that accept a password (Gmail needs an *app password*). Outlook.com/Hotmail personal mailboxes are not supported because Microsoft requires its own sign-in.
 
 ## Licenza
 [MIT](LICENSE) – libero uso, modifica e ridistribuzione, mantenendo l'avviso di copyright. Il software è fornito «così com'è», senza garanzie (vedi anche `LEGGIMI_AVVERTENZE.txt`).

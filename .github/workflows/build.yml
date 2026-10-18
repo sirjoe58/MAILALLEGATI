@@ -94,9 +94,10 @@ jobs:
         run: |
           Set-Location $env:WIN_DIR
           python -m pip install -r requirements.txt
-          python -m PyInstaller --noconfirm --onefile --windowed --name MailAllegati --collect-submodules keyring.backends --hidden-import pystray._win32 --add-data "LEGGIMI_AVVERTENZE.txt;." mail_allegati.py
+          python -m PyInstaller --noconfirm --onefile --windowed --name MailAllegati --collect-submodules keyring.backends --hidden-import pystray._win32 --add-data "LEGGIMI_AVVERTENZE.txt;." --add-data "WARNINGS_EN.txt;." mail_allegati.py
           if ($LASTEXITCODE -ne 0) { exit 1 }
           Copy-Item LEGGIMI_AVVERTENZE.txt dist\
+          Copy-Item WARNINGS_EN.txt dist\
       - name: Crea programma di installazione
         shell: pwsh
         run: |
