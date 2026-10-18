@@ -10,7 +10,7 @@ import org.json.JSONArray
 /** Impostazioni dell'app. Le password sono salvate cifrate. */
 class Settings(context: Context) {
     companion object {
-        const val DISCLAIMER_VERSION = 1
+        const val DISCLAIMER_VERSION = 2
     }
 
     private val p: SharedPreferences =
@@ -67,6 +67,8 @@ class Settings(context: Context) {
     var renameTemplate: String
         get() = str("rename_template", "{data}_{mittente}_{nome}").ifBlank { "{data}_{mittente}_{nome}" }
         set(v) = setStr("rename_template", v.trim())
+    var checkUpdates: Boolean get() = bool("check_updates", true); set(v) = setBool("check_updates", v)
+    var lastUpdateCheck: Long get() = p.getLong("last_update_check", 0); set(v) = p.edit { putLong("last_update_check", v) }
     var skipDuplicates: Boolean get() = bool("skip_duplicates", true); set(v) = setBool("skip_duplicates", v)
 
     var nasEnabled: Boolean get() = bool("nas_enabled", false); set(v) = setBool("nas_enabled", v)
