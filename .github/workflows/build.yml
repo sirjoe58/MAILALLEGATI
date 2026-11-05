@@ -70,6 +70,7 @@ jobs:
         with:
           name: MailAllegati-Android
           path: out/
+          retention-days: 7
 
   windows:
     runs-on: windows-latest
@@ -112,6 +113,7 @@ jobs:
         with:
           name: MailAllegati-Windows
           path: out/
+          retention-days: 7
 
   release:
     if: >-
