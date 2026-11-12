@@ -11,8 +11,8 @@ android {
         applicationId = "it.mailallegati"
         minSdk = 26
         targetSdk = 35
-        versionCode = 5
-        versionName = "1.4.0"
+        versionCode = 6
+        versionName = "1.4.1"
     }
 
     // Firma: la chiave NON e' nel repository. La compilazione su GitHub la legge dai Secrets
