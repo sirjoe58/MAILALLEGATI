@@ -195,6 +195,7 @@ class App(tk.Tk):
         self.stop_event = threading.Event()
         self.worker = None
         self.check_lock = threading.Lock()
+        self.block_until = 0
         self.accounts = [dict(a) for a in core.get_accounts(self.cfg)] or [self._blank_account()]
         self.acc_pw = [core.account_password(a) for a in self.accounts]
         self.acc_idx = 0
@@ -753,7 +754,9 @@ class App(tk.Tk):
         self._run_bg(job)
 
     # ------------------------------------------------------------ controllo
-    def _do_check(self):
+    def _do_check(self, manual=False):
+        if not manual and time.time() < self.block_until:
+            return  # pausa dopo un blocco del server: non insistere
         if not self.check_lock.acquire(blocking=False):
             return
         try:
@@ -767,7 +770,13 @@ class App(tk.Tk):
             if names:
                 self.after(0, self.refresh_recent)
                 self.after(0, self.refresh_bills)
+            self.block_until = 0
             self._bill_reminders()
+        except core.BlockedError as e:
+            self.block_until = time.time() + core.BLOCK_PAUSE_MINUTES * 60
+            for line in str(e).splitlines():
+                self.log(T("ERRORE: {}").format(line))
+            self.after(0, lambda: self.v_status.set(T("Server di posta ha bloccato la connessione: controlli sospesi")))
         except Exception as e:
             self.log(T("ERRORE: {}").format(e))
         finally:
@@ -1027,7 +1036,7 @@ class App(tk.Tk):
     # ------------------------------------------------------------ monitoraggio
     def check_now(self):
         self.save(quiet=True)
-        self._run_bg(self._do_check)
+        self._run_bg(lambda: self._do_check(manual=True))
 
     def toggle_monitor(self):
         if self.worker and self.worker.is_alive():
