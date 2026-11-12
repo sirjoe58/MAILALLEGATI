@@ -18,7 +18,7 @@ from email.utils import getaddresses
 from i18n import T
 
 APP_NAME = "MailAllegati"
-APP_VERSION = "1.4.0"
+APP_VERSION = "1.4.1"
 BLOCK_PAUSE_MINUTES = 30
 GITHUB_REPO = "sirjoe58/MAILALLEGATI"
 APP_DIR = os.path.join(os.environ.get("APPDATA") or os.path.expanduser("~"), APP_NAME)
