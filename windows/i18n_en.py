@@ -165,6 +165,8 @@ EN = {
     '✔ NAS raggiungibile: {} ({} elementi)': '✔ NAS reachable: {} ({} items)',
     'Controllo completato: {} allegati salvati': 'Check completed: {} attachments saved',
     'ERRORE: {}': 'ERROR: {}',
+    "Il server di posta ha bloccato la connessione (blacklist). Spegni la VPN se e' attiva: i controlli sono sospesi per {} minuti. Con 'Controlla ora' puoi riprovare subito dopo aver spento la VPN.": "The mail server blocked the connection (blacklist). Turn off your VPN if it is on: checks are paused for {} minutes. Use 'Check now' to retry right after turning the VPN off.",
+    'Server di posta ha bloccato la connessione: controlli sospesi': 'Mail server blocked the connection: checks paused',
     'File in attesa di invio al NAS: {}': 'Files waiting to be sent to the NAS: {}',
     'È disponibile la versione {} di MailAllegati': 'MailAllegati version {} is available',
     'Da pagare': 'To pay',

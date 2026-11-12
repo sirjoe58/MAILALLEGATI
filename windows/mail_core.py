@@ -19,6 +19,7 @@ from i18n import T
 
 APP_NAME = "MailAllegati"
 APP_VERSION = "1.4.0"
+BLOCK_PAUSE_MINUTES = 30
 GITHUB_REPO = "sirjoe58/MAILALLEGATI"
 APP_DIR = os.path.join(os.environ.get("APPDATA") or os.path.expanduser("~"), APP_NAME)
 CONFIG_FILE = os.path.join(APP_DIR, "config.json")
@@ -561,6 +562,25 @@ def flush_queue(cfg, nas_password, log=print, nas_factory=None):
     return sent, queue_count()
 
 
+class BlockedError(Exception):
+    """Il server di posta ha bloccato la connessione (blacklist, IP sospetto, VPN)."""
+
+
+_BLOCK_WORDS = ("[alert]", "rbl", "blacklist", "blocklist", "blocked", "banned")
+
+
+def is_block_error(e):
+    t = str(e).lower()
+    return any(w in t for w in _BLOCK_WORDS)
+
+
+def block_message(acc_name=""):
+    base = T("Il server di posta ha bloccato la connessione (blacklist). Spegni la VPN se e' attiva: "
+             "i controlli sono sospesi per {} minuti. Con 'Controlla ora' puoi riprovare subito dopo aver spento la VPN.")
+    base = base.format(BLOCK_PAUSE_MINUTES)
+    return (acc_name + ": " if acc_name else "") + base
+
+
 def short_error(e):
     t = str(e) or e.__class__.__name__
     return t if len(t) < 120 else t[:117] + "..."
@@ -804,14 +824,21 @@ def check_all(cfg, nas_password="", log=print, on_saved=None, nas_factory=None):
         raise RuntimeError(T("Configura server e utente email"))
     total = 0
     multi = len(accs) > 1
+    blocked = []
     for acc in accs:
         try:
             total += check_mail(account_cfg(cfg, acc, multi), account_password(acc), nas_password,
                                 log=log, nas_factory=nas_factory, on_saved=on_saved)
         except Exception as e:
+            name = acc.get("name") or acc.get("user")
+            if is_block_error(e):
+                blocked.append(block_message(name if multi else ""))
+                continue
             if not multi:
                 raise
-            log(T("ERRORE casella {}: {}").format(acc.get("name") or acc.get("user"), e))
+            log(T("ERRORE casella {}: {}").format(name, e))
+    if blocked:
+        raise BlockedError("\n".join(blocked))
     return total
 
 
