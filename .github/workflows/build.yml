@@ -156,3 +156,8 @@ jobs:
           gh release create "$TAG" up/* -R "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
             --title "MailAllegati $TAG" \
             --notes "Scarica MailAllegati-Setup.exe per Windows oppure MailAllegati-Android.apk per Android. Prima dell'uso leggi LEGGIMI_AVVERTENZE.txt."
+
+      - name: Tiene solo le ultime 2 versioni
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash pulizia-release.sh "$GITHUB_REPOSITORY"
